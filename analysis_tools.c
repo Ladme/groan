@@ -60,9 +60,9 @@ size_t select_atoms(
 {
     if (system == NULL) return 0;
 
-    // we allocate enough memory to hold all atoms
-    // this may be memory inefficient, but it is faster and safer than reallocating
-    *atom_ids = malloc(system->n_atoms * sizeof(size_t));
+    size_t alloc_ids = INITIAL_SELECTION_SIZE;
+    *atom_ids = malloc(alloc_ids * sizeof(size_t));
+    
 
     // if string is NULL, return list of indices of all atoms
     if (match_string == NULL) {
@@ -89,6 +89,12 @@ size_t select_atoms(
         // and for each atom try matching the match function to individual match elements
         for (size_t j = 0; j < n_elements; ++j) {
             if (match_function(&(system->atoms[i]), elements[j])) {
+                // reallocate array if needed
+                if (selection_iterator >= alloc_ids) {
+                    alloc_ids *= 2;
+                    *atom_ids = realloc(*atom_ids, alloc_ids * sizeof(size_t));
+                }
+
                 (*atom_ids)[selection_iterator] = i;
                 ++selection_iterator;
                 break;

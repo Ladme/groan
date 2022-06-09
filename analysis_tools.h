@@ -13,6 +13,12 @@
  */ 
 #define MAX_MATCH_STRING_LEN 100
 
+/*
+ * Initial number of atom indices in selection array.
+ * See function select_atoms().
+ */
+#define INITIAL_SELECTION_SIZE 64
+
 /* ! \brief Splits string by delimiter and saves the substrings into an array. 
  * 
  * \param string        string to be split
