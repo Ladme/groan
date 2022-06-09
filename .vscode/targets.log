@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Jun  9 17:24:30 2022
+# Make data base, printed on Thu Jun  9 19:38:22 2022
 
 # Variables
 
@@ -69,7 +69,7 @@ DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-78eaaeff-4c0e-4c21-bbcd-f74fa649f790.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-2eae226f-baa5-480c-9c15-54585d6fd261.sock
 # environment
 LC_NAME = de_AT.UTF-8
 # environment
@@ -133,7 +133,7 @@ VSCODE_CODE_CACHE_PATH = /home/ladme/.config/Code/CachedData/57fd6d0195bb9b9d1b4
 # environment
 LOGNAME = ladme
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # automatic
 +F = $(notdir $+)
 # environment
@@ -173,7 +173,7 @@ LC_TELEPHONE = de_AT.UTF-8
 # default
 MAKE_COMMAND := make
 # environment
-OLDPWD = /home/ladme
+OLDPWD = /storage/brno12-cerit/home/ladme/C-programs/wd_map_calculator
 # default
 .VARIABLES := 
 # automatic
@@ -213,7 +213,7 @@ LC_MEASUREMENT = de_AT.UTF-8
 # environment
 LC_ALL = C
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/cb8d417e_3775_4644_8668_94989f458e90
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/724618a8_9108_4b47_b119_99d21389a95f
 # automatic
 ^F = $(notdir $^)
 # environment
@@ -235,7 +235,7 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 9453
+VSCODE_PID = 16977
 # variable set hash-table stats:
 # Load=112/1024=11%, Rehash=0, Collisions=11/137=8%
 
@@ -245,9 +245,9 @@ VSCODE_PID = 9453
 
 # Directories
 
-# . (device 97, inode 2375172810): 16 files, no impossibilities.
+# . (device 84, inode 2375172810): 17 files, no impossibilities.
 
-# 16 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -279,6 +279,7 @@ gro_analysis: xdrfile/xdrfile.c xdrfile/xdrfile_xtc.c gro_io.c xtc_io.c analysis
 # Not a target:
 analysis_tools.c:
 #  Implicit rule search has not been done.
+ 
 #  Modification time never checked.
 #  File has not been updated.
 
@@ -291,7 +292,6 @@ xdrfile/xdrfile_xtc.c:
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
- 
 #  Last modified 2022-06-09 13:56:40.561978
 #  File has been updated.
 #  Successfully updated.
@@ -328,12 +328,12 @@ xdrfile/xdrfile.c:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 24 / storage = 251 B / avg = 10 B
-# current buf: size = 8162 B / used = 251 B / count = 24 / avg = 10 B
+# strcache buffers: 1 (0) / strings = 25 / storage = 259 B / avg = 10 B
+# current buf: size = 8162 B / used = 259 B / count = 25 / avg = 10 B
 
-# strcache performance: lookups = 32 / hit rate = 25%
+# strcache performance: lookups = 33 / hit rate = 24%
 # hash-table stats:
-# Load=24/8192=0%, Rehash=0, Collisions=1/32=3%
-# Finished Make data base on Thu Jun  9 17:24:34 2022
+# Load=25/8192=0%, Rehash=0, Collisions=1/33=3%
+# Finished Make data base on Thu Jun  9 19:38:22 2022
 
  

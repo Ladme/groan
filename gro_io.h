@@ -106,16 +106,21 @@ system_t *load_gro(const char *filename);
 
 /* ! \brief Prints information about the system in gro format into stream.
  *
- * \param stream        output stream for printing (e.g. stdout)
- * \param system        pointer a system_t structure that should be printed
- * \param write_mode    should the velocities be printed (velocities) or not (no_velocities)
- * \param comment       string that will be printed as the first line of gro file
+ * \param stream            output stream for printing (e.g. stdout)
+ * \param system            pointer a system_t structure that should be printed
+ * \param atom_indices      list of atom indices specifying the atoms that should be printed
+ * \param n_selection_atoms number of atom indices
+ * \param atom_indices      indices of atoms that should be printed (if NULL, all atoms will be printed)
+ * \param write_mode        should the velocities be printed (velocities) or not (no_velocities)
+ * \param comment           string that will be printed as the first line of gro file
  * 
  * \return Zero if successful, else non-zero.
  */
 int write_gro(
         FILE *stream, 
-        const system_t *system, 
+        const system_t *system,
+        const size_t *atom_indices,
+        const size_t n_selection_atoms,
         const write_mode_t write_mode,
         const char *comment); 
 

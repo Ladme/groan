@@ -18,6 +18,15 @@ typedef float vec_t[3];
 typedef float box_t[9];
 
 /*
+ * Specifies whether all atoms from system or 
+ * only atoms in an index list should be used.
+ */
+typedef enum loop_mode {
+    all = 0,       // all atoms
+    selection = 1  // atoms from index list
+} loop_mode_t;
+
+/*
  * Structure containing all the available information about a specific atom.
  */
 typedef struct atom {

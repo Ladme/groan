@@ -202,17 +202,37 @@ system_t *load_gro(const char *filename)
 int write_gro(
         FILE *stream, 
         const system_t *system, 
+        const size_t *atom_indices,
+        const size_t n_selection_atoms,
         const write_mode_t write_mode,
         const char *comment)
 {
     if (system == NULL || stream == NULL) return 1;
 
+    // if the array of atom indices is not provided, use all atoms from the system
+    size_t n_atoms = 0;
+    loop_mode_t mode = all;
+    if (n_selection_atoms == 0 || atom_indices == NULL) {
+        n_atoms = system->n_atoms;
+    } else {
+        n_atoms = n_selection_atoms;
+        mode = selection;
+    }
+
     fprintf(stream, "%s\n", comment);
-    fprintf(stream, "%ld\n", system->n_atoms);
+    fprintf(stream, "%ld\n", n_atoms);
 
     // loop through atoms printing information about them
-    for (size_t i = 0; i < system->n_atoms; ++i) {
-        const atom_t *atom = &(system->atoms[i]);
+    for (size_t i = 0; i < n_atoms; ++i) {
+
+        // select the corresponding atom
+        const atom_t *atom = NULL;
+        if (mode == all) {
+            atom = &(system->atoms[i]);
+        } else {
+            atom = &(system->atoms[atom_indices[i]]);
+        }
+
         fprintf(stream, "%5d%-5s%5s%5d%8.3f%8.3f%8.3f",
         atom->residue_number, atom->residue_name, atom->atom_name, atom->atom_number,
         atom->position[0], atom->position[1], atom->position[2]);
