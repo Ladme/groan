@@ -72,7 +72,22 @@ size_t select_atoms(
         int (*match_function)(const atom_t *, const char *));
 
 
-
+/* ! \brief Calculates center of geometry for selected atoms from specified coordinates.
+ *
+ * Loops through atom indices in atom_ids and calculates the center of geometry
+ * from their coordinates. 
+ * If coordinates are not supplied, information from system will be used.
+ * TODO: system is not strictly necessary, remove in further versions
+ * TODO: expand to cases when atom_ids is not supplied (loop through all atoms)
+ * 
+ * \param system                system_t structure containing information about the system
+ * \param n_selected            number of selected atoms
+ * \param atom_ids              an array of atom indices to calculate center of geometry for        
+ * \param center                pointer to a vector into which the center of geometry will be saved
+ * \param coordinates           x,y,z coordinates for all atoms in the system
+ * 
+ * \return Returns zero in case the calculation finished successfuly. Else returns non-zero.
+ */
 int center_of_geometry(
         const system_t *system,
         const size_t n_selected,
