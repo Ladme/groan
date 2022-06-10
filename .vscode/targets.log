@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Jun  9 19:38:22 2022
+# Make data base, printed on Fri Jun 10 13:03:49 2022
 
 # Variables
 
@@ -69,7 +69,7 @@ DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-2eae226f-baa5-480c-9c15-54585d6fd261.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-26d2a1b0-6b6a-4481-bb52-60777449bc00.sock
 # environment
 LC_NAME = de_AT.UTF-8
 # environment
@@ -77,7 +77,7 @@ VSCODE_CWD = /auto/brno12-cerit/nfs4/home/ladme/C-programs/groan
 # environment
 XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session0
 # environment
-KRB5CCNAME = /tmp/krb5cc_1000_NzJkNDJhMG
+KRB5CCNAME = /tmp/krb5cc_1000_OWZjNDY2ZG
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
@@ -85,7 +85,7 @@ PATH = /home/ladme/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/kronos:@/tmp/.ICE-unix/1289,unix/kronos:/tmp/.ICE-unix/1289
+SESSION_MANAGER = local/kronos:@/tmp/.ICE-unix/1291,unix/kronos:/tmp/.ICE-unix/1291
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -117,7 +117,7 @@ QT_QPA_PLATFORMTHEME = qt5ct
 # environment
 XDG_SEAT = seat0
 # environment
-SSH_AGENT_PID = 1438
+SSH_AGENT_PID = 1435
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = X-Cinnamon
 # environment
@@ -129,7 +129,7 @@ HOME = /home/ladme
 # environment
 VSCODE_CLI = 1
 # environment
-VSCODE_CODE_CACHE_PATH = /home/ladme/.config/Code/CachedData/57fd6d0195bb9b9d1b49f6da5db789060795de47
+VSCODE_CODE_CACHE_PATH = /home/ladme/.config/Code/CachedData/4af164ea3a06f701fe3e89a2bcbb421d2026b68f
 # environment
 LOGNAME = ladme
 # environment
@@ -173,7 +173,7 @@ LC_TELEPHONE = de_AT.UTF-8
 # default
 MAKE_COMMAND := make
 # environment
-OLDPWD = /storage/brno12-cerit/home/ladme/C-programs/wd_map_calculator
+OLDPWD = /home/ladme
 # default
 .VARIABLES := 
 # automatic
@@ -183,7 +183,7 @@ LANGUAGE = en_US
 # environment
 XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
 # environment
-VSCODE_IPC_HOOK = /run/user/1000/vscode-32564d05-1.67.0-main.sock
+VSCODE_IPC_HOOK = /run/user/1000/vscode-32564d05-1.68.0-main.sock
 # makefile
 MAKEFLAGS = pqrR
 # environment
@@ -199,7 +199,7 @@ LC_PAPER = de_AT.UTF-8
 # environment
 QT_ACCESSIBILITY = 1
 # environment
-DESKTOP_AUTOSTART_ID = 10b5fcd6bd494067b165478294658174500000012890038
+DESKTOP_AUTOSTART_ID = 1049ea8d33aa929d86165483893827608400000012910038
 # environment
 DEFAULTS_PATH = /usr/share/gconf/cinnamon.default.path
 # default
@@ -213,11 +213,11 @@ LC_MEASUREMENT = de_AT.UTF-8
 # environment
 LC_ALL = C
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/724618a8_9108_4b47_b119_99d21389a95f
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/9fc7642e_4fdb_4be0_962f_f336497ca096
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.148
+GNOME_TERMINAL_SERVICE = :1.98
 # default
 SUFFIXES := 
 # environment
@@ -235,7 +235,7 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 16977
+VSCODE_PID = 24122
 # variable set hash-table stats:
 # Load=112/1024=11%, Rehash=0, Collisions=11/137=8%
 
@@ -245,7 +245,7 @@ VSCODE_PID = 16977
 
 # Directories
 
-# . (device 84, inode 2375172810): 17 files, no impossibilities.
+# . (device 83, inode 2375172810): 17 files, no impossibilities.
 
 # 17 files, no impossibilities in 1 directories.
 
@@ -279,11 +279,11 @@ gro_analysis: xdrfile/xdrfile.c xdrfile/xdrfile_xtc.c gro_io.c xtc_io.c analysis
 # Not a target:
 analysis_tools.c:
 #  Implicit rule search has not been done.
- 
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
+ 
 xdrfile/xdrfile_xtc.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -334,6 +334,6 @@ xdrfile/xdrfile.c:
 # strcache performance: lookups = 33 / hit rate = 24%
 # hash-table stats:
 # Load=25/8192=0%, Rehash=0, Collisions=1/33=3%
-# Finished Make data base on Thu Jun  9 19:38:22 2022
+# Finished Make data base on Fri Jun 10 13:03:49 2022
 
  

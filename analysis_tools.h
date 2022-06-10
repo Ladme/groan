@@ -19,6 +19,31 @@
  */
 #define INITIAL_SELECTION_SIZE 64
 
+/*
+ * Used to specify geometry for a geometric selection of atoms.
+ * xcylinder = cylinder with its principal axis aligned to x axis
+ * ycylinder = cylinder aligned to y axis
+ * zcylinder = cylinder aligned to z axis
+ * rectangular = rectangular box
+ * sphere    = sphere [duh]
+ */
+typedef enum geometry {
+        xcylinder,
+        ycylinder,
+        zcylinder,
+        box,
+        sphere
+} geometry_t;
+
+/*
+ * Used to specify plane.
+ */
+typedef enum plane {
+        xy,
+        xz,
+        yz
+} plane_t;
+
 /* ! \brief Splits string by delimiter and saves the substrings into an array. 
  * 
  * \param string        string to be split
@@ -46,6 +71,24 @@ int match_residue_name(const atom_t *atom, const char *string);
  * \return Returns non-zero if string matches the atom name of atom or if the string is NULL. Else returns zero.
  */
 int match_atom_name(const atom_t *atom, const char *string);
+
+/* ! \brief Adds target atom index to a list of atom indices.
+ *
+ * Handles reallocation.
+ * 
+ * If output_atoms is NULL, does not do anything.
+ * 
+ * \param output_atoms          pointer to an array of indices
+ * \param allocated_atoms       number of elements for which the memory has been allocated in output_atoms
+ * \param array_index           index of the output_atoms array to which the atom_id should be saved
+ * \param atom_id               index of the atom to be added
+ *
+ */
+void add_selected_atom(
+        size_t **output_atoms,
+        size_t *allocated_atoms,
+        const size_t array_index,
+        const size_t atom_id);
 
 /* ! \brief Selects atoms from the system.
  * 
@@ -98,23 +141,71 @@ size_t join_selections(
         const size_t *selection2,
         const size_t n_selection2);
 
-/* ! \brief Returns xy plane distance between two points in space.
+
+/* ! \brief Selects atoms based on specified geometric property.
+ *
+ * Loops through atoms of system or (if supplied) atoms of atom_ids.
+ * For each atom checks whether it is inside a specified area
+ * and if it is, adds it to output_atom_ids.
+ * 
+ * Atoms are selected relative to center. Use {0, 0, 0} as center for absolute reference.
+ * 
+ * If coordinates are NULL, coordinates from system are used.
+ * 
+ * The function handles memory allocation for output_atom_ids. If you do not want to save
+ * indices of selected atoms, supply NULL as **output_atom_ids.
+ * 
+ * Available geometries:
+ *      cylinder (xcylinder,ycylinder,zcylinder)
+ *              > selects atoms inside a specified cylinder
+ *              > geometry definition is float[3] = {radius, bottom of the cylinder, top of the cylinder}
+ *      box
+ *              > selects atoms inside a box
+ *              > geometry definition is float[9] = {min_x, max_x, min_y, max_y, min_z, max_z}
+ *      sphere
+ *              > selects atoms inside a sphere
+ *              > geometry definition is *float = radius
+ * 
+ * \param system                system_t structure containing information about the system
+ * \param atom_ids              an array of input atom indices
+ * \param n_selected            number of input atom indices
+ * \param output_atom_ids       pointer to an array where the selected atom indices will be saved
+ * \param coordinates           coordinates of the atoms from an xtc/trr file
+ * \param center                reference coordinates
+ * \param geometry              geometry type (see above)
+ * \param geometry_definition   geometric description of the selection area (see above)
+ * 
+ * \return The number of selected atoms.
+ * 
+ */
+size_t select_geometry(
+        const system_t *system,
+        const size_t *atom_ids,
+        const size_t n_selected,
+        size_t **output_atom_ids,
+        const vec_t *coordinates,
+        const vec_t center,
+        const geometry_t geometry,
+        const void *geometry_definition);
+
+/* ! \brief Returns plane distance between two points in space.
  * 
  * \param particle1     pointer to an array of floats specifying the position of particle 1
  * \param particle2     pointer to an array of floats specifying the position of particle 2
+ * \param plane         specifies in which plane the 2D distance should be calculated
  * 
- * \return xy plane distance between particle1 and particle2
+ * \return Plane distance between particle1 and particle2
  */
-float distance2D(float *particle1, float *particle2);
+float distance2D(const float *particle1, const float *particle2, const plane_t plane);
 
 /* ! \brief Returns distance between two points in space.
  * 
  * \param particle1     pointer to a vector specifying the position of particle1
  * \param particle2     pointer to a vector specifying the position of particle2
  * 
- * \return distance between particle1 and particle2
+ * \return Distance between particle1 and particle2
  */
-float distance3D(vec_t particle1, vec_t particle2);
+float distance3D(const vec_t particle1, const vec_t particle2);
 
 /* ! \brief Calculates center of geometry for selected atoms from specified coordinates.
  *
