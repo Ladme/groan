@@ -1,4 +1,4 @@
-# GROmacs ANalaysis (groan)
+# GROmacs ANalysis (groan)
 
 C library for analysis of Gromacs simulations.
 
