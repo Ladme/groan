@@ -12,7 +12,7 @@ Include `groan.h` in your code and link with `-lm -lgroan`.
 
 ## Example
 
-`
+```
 #include <groan.h>
 #include <stdio.h>
 
@@ -38,6 +38,6 @@ int main(void)
     
     return 0;
 }
-`
+```
 
 Compile with `gcc {YOUR_CODE}.c -L{PATH_TO_GROAN} -I{PATH_TO_GROAN} -lm -lgroan -o {YOUR_PROGRAM}`.
