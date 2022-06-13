@@ -14,7 +14,6 @@ Include `groan.h` in your code and link with `-lm -lgroan`.
 
 ```
 #include <groan.h>
-#include <stdio.h>
 
 int main(void)
 {

@@ -18,3 +18,13 @@ analysis_tools.o: src/analysis_tools.c
 	
 clean:
 	rm -f *.a *.o src/*.a src/*.o
+
+dev: src/analysis_tools.c src/xtc_io.c src/gro_io.c src/xdrfile/xdrfile_xtc.c src/xdrfile/xdrfile.c
+	rm -f *.a *.o src/*.a src/*.o
+	gcc -c src/analysis_tools.c -o src/analysis_tools.o -O0 -g
+	gcc -c src/xtc_io.c -o src/xtc_io.o -O0 -g
+	gcc -c src/gro_io.c -o src/gro_io.o -O0 -g
+	gcc -c src/xdrfile/xdrfile_xtc.c -o src/xdrfile_xtc.o -O0 -g
+	gcc -c src/xdrfile/xdrfile.c -o src/xdrfile.o -O0 -g
+	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/gro_io.o src/xtc_io.o src/analysis_tools.o
+

@@ -19,8 +19,6 @@ void reset_velocities(system_t *system)
 
 int read_xtc_step(XDRFILE *xtc, system_t *system)
 {
-    int step = 0;
-    float time = 0.;
     float box[3][3] = {0};
     float prec = 0.;
 
@@ -28,14 +26,12 @@ int read_xtc_step(XDRFILE *xtc, system_t *system)
     // this is a 2D array of [n_atoms][3] floats
     vec_t *coordinates = malloc(system->n_atoms * sizeof(vec_t));
 
-    if (read_xtc(xtc, system->n_atoms, &step, &time, box, coordinates, &prec) != 0) {
+    if (read_xtc(xtc, system->n_atoms, &(system->step), &(system->time), box, coordinates, &prec) != 0) {
         free(coordinates);
         return 1;
     }
 
     // update the system
-    system->step = step;
-    system->time = time;
     box_xtc2gro(box, system->box);
     // loop through all the atoms and update their coordinates
     for (size_t i = 0; i < system->n_atoms; ++i) {

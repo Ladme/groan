@@ -52,46 +52,34 @@ int match_atom_name(const atom_t *atom, const char *string)
     return !strcmp(atom->atom_name, string);
 }
 
-void add_selected_atom(
-        size_t **output_atoms,
+void selection_add_atom(
+        atom_selection_t **output_atoms,
         size_t *allocated_atoms,
-        const size_t array_index,
-        const size_t atom_id)
+        atom_t *atom)
 {
-    // if output_atoms is NULL, don't do anything
-    if (output_atoms == NULL) return;
-
     // reallocate array, if needed
-    if (array_index >= *allocated_atoms) {
+    if ((*output_atoms)->n_atoms + 1 >= *allocated_atoms) {
         *allocated_atoms *= 2;
-        *output_atoms = realloc(*output_atoms, *allocated_atoms * sizeof(size_t));
+        *output_atoms = realloc(*output_atoms, sizeof(atom_selection_t) + *allocated_atoms * sizeof(atom_t *));
     }
 
     // add the atom_id to the selection
-    (*output_atoms)[array_index] = atom_id;
+    (*output_atoms)->atoms[(*output_atoms)->n_atoms] = atom;
+    // increase the number of atoms in selection
+    (*output_atoms)->n_atoms++;
 }
 
-size_t select_atoms(
-        const system_t *system,
-        const size_t *input_atom_ids,
-        const size_t n_input_atoms,
-        size_t **output_atom_ids,
+atom_selection_t *select_atoms(
+        const atom_selection_t *input_atoms,
         const char *match_string,
         int (*match_function)(const atom_t *, const char *))
 {
-    if (system == NULL) return 0;
-
+    // allocate memory for output_atoms
     size_t alloc_ids = INITIAL_SELECTION_SIZE;
-    *output_atom_ids = malloc(alloc_ids * sizeof(size_t));
-    
+    atom_selection_t *output_atoms = malloc(sizeof(atom_selection_t) + alloc_ids * sizeof(atom_t *));
+    output_atoms->n_atoms = 0;
 
-    // if string is NULL, return list of indices of all atoms
-    if (match_string == NULL) {
-        for (size_t i = 0; i < system->n_atoms; ++i) {
-            (*output_atom_ids)[i] = i;
-        }
-        return system->n_atoms;
-    }
+    if (input_atoms == NULL || input_atoms->n_atoms == 0) return output_atoms;
 
     // split match_string into individual elements
     // copy the match_string into new string that can be modified
@@ -104,40 +92,14 @@ size_t select_atoms(
     size_t n_elements = strsplit(to_match, &elements, " ");
     if (n_elements <= 0) return 0;
 
-    // if the array of input atoms is not provided, use all atoms from the system
-    size_t n_atoms = 0;
-    loop_mode_t mode = all;
-    if (n_input_atoms == 0 || input_atom_ids == NULL) {
-        n_atoms = system->n_atoms;
-    } else {
-        n_atoms = n_input_atoms;
-        mode = selection;
-    }
-
     // loop through atoms
     size_t selection_iterator = 0;
-    for (size_t i = 0; i < n_atoms; ++i) {
-        
-        // select the corresponding atom
-        const atom_t *atom = NULL;
-        if (mode == all) {
-            atom = &(system->atoms[i]);
-        } else {
-            atom = &(system->atoms[input_atom_ids[i]]);
-        }
-        
+    for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
         // and for each atom try matching the match function to individual match elements
         for (size_t j = 0; j < n_elements; ++j) {
-            if (match_function(atom, elements[j])) {
+            if (match_function(input_atoms->atoms[i], elements[j])) {
 
-                // if a match is found, add the atom index to selection
-                if (mode == all) {
-                    add_selected_atom(output_atom_ids, &alloc_ids, selection_iterator, i);
-                } else {
-                    add_selected_atom(output_atom_ids, &alloc_ids, selection_iterator, input_atom_ids[i]);
-                }
-
-                ++selection_iterator;
+                selection_add_atom(&output_atoms, &alloc_ids, input_atoms->atoms[i]);
                 break;
             }
         }
@@ -147,71 +109,54 @@ size_t select_atoms(
     free(elements);
     free(to_match);
 
-    // we return the number of selected atoms
-    return selection_iterator;
+    // return the pointer to output atoms
+    return output_atoms;
 }
 
-size_t join_selections(
-        size_t **target,
-        const size_t *selection1,
-        const size_t n_selection1,
-        const size_t *selection2,
-        const size_t n_selection2)
+atom_selection_t *select_system(system_t *system)
 {
-    *target = malloc(n_selection1 * sizeof(size_t) + n_selection2 * sizeof(size_t));
+    atom_selection_t *output_atoms = malloc(sizeof(atom_selection_t) + system->n_atoms * sizeof(atom_t *));
 
-    memcpy(*target, selection1, n_selection1 * sizeof(size_t));
-    memcpy(*target + n_selection1, selection2, n_selection2 * sizeof(size_t));
+    for (size_t i = 0; i < system->n_atoms; ++i) {
+        output_atoms->atoms[i] = &(system->atoms[i]);
+    }
 
-    return n_selection1 + n_selection2;
+    output_atoms->n_atoms = system->n_atoms;
+
+    return output_atoms;
 }
 
-size_t select_geometry(
-        const system_t *system,
-        const size_t *atom_ids,
-        const size_t n_selected,
-        size_t **output_atom_ids,
-        const vec_t *coordinates,
+
+atom_selection_t *selection_cat(const atom_selection_t *selection1, const atom_selection_t *selection2)
+{
+    // allocate memory for output_atoms
+    atom_selection_t *output_atoms = malloc(sizeof(atom_selection_t) + (selection1->n_atoms + selection2->n_atoms) * sizeof(atom_t *));
+    output_atoms->n_atoms = selection1->n_atoms + selection2->n_atoms;
+
+    // cat input selections
+    memcpy(output_atoms->atoms, selection1->atoms, selection1->n_atoms * sizeof(atom_t *));
+    memcpy(output_atoms->atoms + selection1->n_atoms, selection2->atoms, selection2->n_atoms * sizeof(atom_t *));
+
+    return output_atoms;
+}
+
+
+atom_selection_t *select_geometry(
+        const atom_selection_t *input_atoms,
         const vec_t center,
         const geometry_t geometry,
         const void *geometry_definition)
 {
-    if (system == NULL && (atom_ids == NULL || n_selected == 0 || coordinates == NULL)) {
-        return 1;
-    }
-
+    // allocate memory for output_atoms
     size_t alloc_ids = INITIAL_SELECTION_SIZE;
-    if (output_atom_ids != NULL) *output_atom_ids = malloc(alloc_ids * sizeof(size_t));
+    atom_selection_t *output_atoms = malloc(sizeof(atom_selection_t) + alloc_ids * sizeof(atom_t *));
+    output_atoms->n_atoms = 0;
 
-    // if the array of atom_ids is not provided, use all atoms from the system
-    size_t n_atoms = 0;
-    loop_mode_t mode = all;
-    if (n_selected == 0 || atom_ids == NULL) {
-        n_atoms = system->n_atoms;
-    } else {
-        n_atoms = n_selected;
-        mode = selection;
-    }
+    if (input_atoms == NULL || input_atoms->n_atoms == 0) return output_atoms;
 
-    size_t selection_iterator = 0;
-    for (size_t i = 0; i < n_atoms; ++i) {
-
-        // select the corresponding atom index
-        size_t atom_index = 0;
-        if (mode == all) {
-            atom_index = i;
-        } else {
-            atom_index = atom_ids[i];
-        }
-
-        // select the corresponding coordinates
-        const float *coor = NULL;
-
-        if (coordinates == NULL) {
-            coor = system->atoms[atom_index].position;
-        } else {
-            coor = coordinates[atom_index];
-        }
+    // loop through atoms
+    for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
+        atom_t *atom = input_atoms->atoms[i];
 
         // decide whether the atom should be included in the selection
         if (geometry == xcylinder || geometry == ycylinder || geometry == zcylinder) {
@@ -232,45 +177,39 @@ size_t select_geometry(
                 plane = xz;
             }
 
-            if (coor[index] - center[index] > cyl_def[1] && 
-                coor[index] - center[index] < cyl_def[2] &&
-                distance2D(coor, center, plane) < cyl_def[0]) {
-                    add_selected_atom(output_atom_ids, &alloc_ids, selection_iterator, atom_index);
-                    selection_iterator++;
+            if (atom->position[index] - center[index] > cyl_def[1] && 
+                atom->position[index] - center[index] < cyl_def[2] &&
+                distance2D(atom->position, center, plane) < cyl_def[0]) {
+                    selection_add_atom(&output_atoms, &alloc_ids, atom);
                 }
 
         } else if (geometry == box) {
             const float *box_def = (float *) geometry_definition;
-            short selected = 1;
 
-            // loop through all three dimensions of the box
-            for (short j = 0; j < 3; ++j) {
-                if (coor[j] - center[j] < box_def[j*2] ||
-                    coor[j] - center[j] > box_def[j*2 + 1]) {
-                        selected = 0;
-                        break;
+            // compare all three dimensions of the box
+            if (atom->position[0] - center[0] > box_def[0] && 
+                atom->position[0] - center[0] < box_def[1] && 
+                atom->position[1] - center[1] > box_def[2] &&
+                atom->position[1] - center[1] < box_def[3] &&
+                atom->position[2] - center[2] > box_def[4] &&
+                atom->position[2] - center[2] < box_def[5]) {
+                    selection_add_atom(&output_atoms, &alloc_ids, atom);
                 }
-            }
 
-            if (selected) {
-                add_selected_atom(output_atom_ids, &alloc_ids, selection_iterator, atom_index);
-                selection_iterator++;
-            }
         } else if (geometry == sphere) {
             const float *sphere_def = (float *) geometry_definition;
 
-            if (distance3D(coor, center) < *sphere_def) {
-                add_selected_atom(output_atom_ids, &alloc_ids, selection_iterator, atom_index);
-                selection_iterator++;
+            if (distance3D(atom->position, center) < *sphere_def) {
+                selection_add_atom(&output_atoms, &alloc_ids, atom);
             }
         }
 
     }
 
-    return selection_iterator;
+    return output_atoms;
 }
 
-float distance2D(const float *particle1, const float *particle2, const plane_t plane)
+float distance2D(const vec_t particle1, const vec_t particle2, const plane_t plane)
 {   
     float dim1_d = 0;
     float dim2_d = 0;
@@ -298,38 +237,19 @@ float distance3D(const vec_t particle1, const vec_t particle2)
     return sqrt( xd*xd + yd*yd + zd*zd );
 }
 
-int center_of_geometry(
-        const system_t *system,
-        const size_t *atom_ids,
-        const size_t n_selected,
-        vec_t center,
-        const vec_t *coordinates)
+int center_of_geometry(const atom_selection_t *input_atoms, vec_t center)
 {
-    if (system == NULL && (atom_ids == NULL || n_selected == 0 || coordinates == NULL)) {
-        return 1;
+    if (input_atoms == NULL || input_atoms->n_atoms == 0) return 1;
+
+    for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
+        center[0] += input_atoms->atoms[i]->position[0];
+        center[1] += input_atoms->atoms[i]->position[1];
+        center[2] += input_atoms->atoms[i]->position[2];
     }
 
-    // if no coordinates are provided, use coordinates from system
-    if (coordinates == NULL) {
-        for (size_t i = 0; i < n_selected; ++i) {
-            center[0] += system->atoms[atom_ids[i]].position[0];
-            center[1] += system->atoms[atom_ids[i]].position[1];
-            center[2] += system->atoms[atom_ids[i]].position[2];
-        }
-    }
-
-    // else, use the supplied coordinates
-    else {
-        for (size_t i = 0; i < n_selected; i++) {
-            center[0] += coordinates[atom_ids[i]][0];
-            center[1] += coordinates[atom_ids[i]][1];
-            center[2] += coordinates[atom_ids[i]][2];
-        }
-    }
-
-    center[0] /= n_selected;
-    center[1] /= n_selected;
-    center[2] /= n_selected;
+    center[0] /= input_atoms->n_atoms;
+    center[1] /= input_atoms->n_atoms;
+    center[2] /= input_atoms->n_atoms;
 
     return 0;
 }

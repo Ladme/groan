@@ -50,4 +50,12 @@ typedef struct system {
     atom_t atoms[];
 } system_t;
 
+/*
+ * Structure containing an array of pointers to atoms and a number of atoms in this array.
+ */
+typedef struct atom_selection {
+    size_t n_atoms;
+    atom_t *atoms[];
+} atom_selection_t;
+
 #endif /* GRO_H */

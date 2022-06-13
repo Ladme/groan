@@ -104,13 +104,13 @@ int parse_gro_line(const char *line, atom_t *atom);
  */
 system_t *load_gro(const char *filename);
 
-/* ! \brief Prints information about the system in gro format into stream.
+/* ! \brief Prints information about the selected atoms in gro format into stream.
  *
+ * Currently, the original numbering is kept.
+ * 
  * \param stream            output stream for printing (e.g. stdout)
- * \param system            pointer a system_t structure that should be printed
- * \param atom_indices      list of atom indices specifying the atoms that should be printed
- * \param n_selection_atoms number of atom indices
- * \param atom_indices      indices of atoms that should be printed (if NULL, all atoms will be printed)
+ * \param atoms             selection of atoms to be printed
+ * \param boxsize           size of the simulation cell
  * \param write_mode        should the velocities be printed (velocities) or not (no_velocities)
  * \param comment           string that will be printed as the first line of gro file
  * 
@@ -118,10 +118,9 @@ system_t *load_gro(const char *filename);
  */
 int write_gro(
         FILE *stream, 
-        const system_t *system,
-        const size_t *atom_indices,
-        const size_t n_selection_atoms,
+        const atom_selection_t *atoms,
+        const box_t boxsize,
         const write_mode_t write_mode,
-        const char *comment); 
-
+        const char *comment);
+        
 #endif /* GRO_IO_H */
