@@ -1,6 +1,8 @@
 // Released under MIT License.
 // Copyright (c) 2022 Ladislav Bartos
 
+/* This file contains structures used by the groan library */
+
 #ifndef GRO_H
 #define GRO_H
 
@@ -57,5 +59,30 @@ typedef struct atom_selection {
     size_t n_atoms;
     atom_t *atoms[];
 } atom_selection_t;
+
+/*
+ * Used to specify geometry for a geometric selection of atoms.
+ * xcylinder = cylinder with its principal axis aligned to x axis
+ * ycylinder = cylinder aligned to y axis
+ * zcylinder = cylinder aligned to z axis
+ * box       = rectangular box
+ * sphere    = sphere [duh]
+ */
+typedef enum geometry {
+        xcylinder,
+        ycylinder,
+        zcylinder,
+        box,
+        sphere
+} geometry_t;
+
+/*
+ * Used to specify plane.
+ */
+typedef enum plane {
+        xy,
+        xz,
+        yz
+} plane_t;
 
 #endif /* GRO_H */

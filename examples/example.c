@@ -39,7 +39,7 @@ int main(void)
     // from membrane, select atoms located inside a cylinder positioned in the peptide center of geometry
     atom_selection_t *membrane_selection = select_geometry(membrane, center_prot, zcylinder, cylinder_definition);
 
-    // we will not be needing "membrane" or "backbone" selections anymore
+    // we will not be needing "membrane" or "backbone" selections anymore, so we free them
     free(membrane);
     membrane = NULL;
     free(backbone);
@@ -48,7 +48,7 @@ int main(void)
     // now we select oxygen atoms of water
     atom_selection_t *water_oxygens = select_atoms(all_atoms, "OW", &match_atom_name);
 
-    // we will not be needing "all_atoms" anymore, so we free them
+    // we will not be needing "all_atoms" anymore
     free(all_atoms);
     all_atoms = NULL;
 
@@ -63,7 +63,7 @@ int main(void)
     // we use coordinates x = 0, y = 0, z = 0 as an absolute reference for select_geometry()
     vec_t absolute_center = {0, 0, 0};
     atom_selection_t *water_selection_box = select_geometry(water_oxygens, absolute_center, box, box_definition);
-    
+
     free(water_oxygens);
     water_oxygens = NULL;
 
@@ -71,10 +71,18 @@ int main(void)
     // as we do not want multiple identical water oxygens in our final selection, we have to use selection_cat_unique()
     atom_selection_t *water_selection = selection_cat_unique(water_selection_sphere, water_selection_box);
 
+    // we can also find out how many water oxygens were shared by both selections
+    atom_selection_t *water_intersect = selection_intersect(water_selection_sphere, water_selection_box);
+    char comment[50] = "";
+    sprintf(comment, "Intersecting water oxygens: %ld", water_intersect->n_atoms);
+    // we will write this to the first line of the output gro file
+
     free(water_selection_sphere);
     water_selection_sphere = NULL;
     free(water_selection_box);
     water_selection_box = NULL;
+    free(water_intersect);
+    water_intersect = NULL;
 
     // now we want to join our membrane selection and our water oxygen selection
     // here, we can use simple selection_cat() as there can be no atom overlap 
@@ -87,8 +95,10 @@ int main(void)
     // now, if there is more than 0 atoms in the final selection, we write the selection into a gro file (output.gro)
     if (final_selection->n_atoms > 0) {
         FILE *output = fopen(OUTPUT, "w");
+        // we can write anything to the first line of the gro file...
+        // ...so we write the number of intersecting oxygen atoms calculated above
         // note that the numbering of the original gro file is kept in the output gro file
-        write_gro(output, final_selection, system->box, velocities, "Arbitrary example selection");
+        write_gro(output, final_selection, system->box, velocities, comment);
         fclose(output);
     }
     
