@@ -93,7 +93,6 @@ atom_selection_t *select_atoms(
     if (n_elements <= 0) return 0;
 
     // loop through atoms
-    size_t selection_iterator = 0;
     for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
         // and for each atom try matching the match function to individual match elements
         for (size_t j = 0; j < n_elements; ++j) {
@@ -136,6 +135,38 @@ atom_selection_t *selection_cat(const atom_selection_t *selection1, const atom_s
     // cat input selections
     memcpy(output_atoms->atoms, selection1->atoms, selection1->n_atoms * sizeof(atom_t *));
     memcpy(output_atoms->atoms + selection1->n_atoms, selection2->atoms, selection2->n_atoms * sizeof(atom_t *));
+
+    return output_atoms;
+}
+
+atom_selection_t *selection_cat_unique(const atom_selection_t *selection1, const atom_selection_t *selection2)
+{
+    // allocate enough memory to hold both selections in full
+    // this may be memory inefficient, if the selections significantly overlap, but it is also faster than reallocation
+    atom_selection_t *output_atoms = malloc(sizeof(atom_selection_t) + (selection1->n_atoms + selection2->n_atoms) * sizeof(atom_t *));
+    output_atoms->n_atoms = selection1->n_atoms;
+
+    // copy first selection into the output selection
+    memcpy(output_atoms->atoms, selection1->atoms, selection1->n_atoms * sizeof(atom_t *));
+
+    // then loop through atoms of the selection2
+    for (size_t i = 0; i < selection2->n_atoms; ++i) {
+        int duplicate = 0;
+        // and for each atom, check that it is NOT inside selection1
+        for (size_t j = 0; j < selection1->n_atoms; ++j) {
+            if (selection2->atoms[i] == selection1->atoms[j]) {
+                duplicate = 1;
+                break;
+            }
+        }
+
+        // if the atom is not duplicate, add it to output selection
+        if (!duplicate) {
+            output_atoms->atoms[output_atoms->n_atoms] = selection2->atoms[i];
+            // increase the counter of output atoms
+            output_atoms->n_atoms++;
+        }
+    }
 
     return output_atoms;
 }

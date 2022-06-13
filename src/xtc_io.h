@@ -15,7 +15,7 @@
  * \param box           box dimensions in the xtc format
  * \param gro_box       box dimensions in the gro format
  */
-void box_xtc2gro(const float box[3][3], box_t gro_box);
+void box_xtc2gro(float box[3][3], box_t gro_box);
 
 /* ! \brief Sets velocities of all particles in a system to zero.
  *

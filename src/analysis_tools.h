@@ -123,6 +123,8 @@ atom_selection_t *select_system(system_t *system);
  *
  * Allocates enough memory for target. 
  * Does NOT destroy or deallocate any of the input selections.
+ * Does NOT care about duplicites in the output selection.
+ * If you want to remove duplicate atoms, use selection_cat_unique().
  * 
  * \param selection1            atom selection n1
  * \param selection2            atom selection n2
@@ -131,6 +133,24 @@ atom_selection_t *select_system(system_t *system);
  */
 atom_selection_t *selection_cat(const atom_selection_t *selection1, const atom_selection_t *selection2);
 
+/* ! \brief Concatenates two atom selections removing duplicates.
+ *
+ * Allocates enough memory for target. 
+ * Does NOT destroy or deallocate any of the input selections.
+ * Makes sure that there are no duplicate atoms in the concatenated selection.
+ * 
+ * Note that selection_cat_unique() is slower than selection_cat(). If you are sure that your
+ * input selections do not contain duplicates, use selection_cat().
+ * 
+ * If you have to use selection_cat_unique(), it is a good idea (performance-wise) to use
+ * the larger selection as the first argument and the smaller selection as the second argument.
+ * 
+ * \param selection1            atom selection n1
+ * \param selection2            atom selection n2
+ * 
+ * \return Pointer to the concatenated atom selection.
+ */
+atom_selection_t *selection_cat_unique(const atom_selection_t *selection1, const atom_selection_t *selection2);
 
 /* ! \brief Selects atoms based on specified geometric property.
  *

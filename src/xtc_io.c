@@ -3,7 +3,7 @@
 
 #include "xtc_io.h"
 
-void box_xtc2gro(const float box[3][3], box_t gro_box)
+void box_xtc2gro(float box[3][3], box_t gro_box)
 {
     gro_box[0] = box[0][0];
     gro_box[1] = box[1][1];
