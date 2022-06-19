@@ -1,7 +1,6 @@
 // Released under MIT License.
 // Copyright (c) 2022 Ladislav Bartos
 
-#include "vector.h"
 #include "analysis_tools.h"
 
 float distance2D(const vec_t particle1, const vec_t particle2, const plane_t plane)
