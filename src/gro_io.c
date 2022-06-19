@@ -37,7 +37,7 @@ void get_fragment(const char *src, char *dest, const size_t start, const size_t 
     dest[len] = '\0';
 }
 
-int parse_int(const char *line, const size_t start, const size_t len, int *element)
+int parse_int(const char *line, const size_t start, const size_t len, groint_t *element)
 {
     char *segment = malloc(len + 1);
     get_fragment(line, segment, start, len);
@@ -46,7 +46,9 @@ int parse_int(const char *line, const size_t start, const size_t len, int *eleme
         free(segment);
         return 1;
     }
-    *element = atoi(segment);
+
+    // TODO: check that the segment is not negative
+    *element = (groint_t) atoi(segment);
 
     free(segment);
     return 0;
@@ -156,6 +158,7 @@ system_t *load_gro(const char *filename)
     memset(system, 0, sizeof(system_t) + n_atoms * sizeof(atom_t));
     system->n_atoms = n_atoms;
 
+    
     // read lines in gro file and load atoms
     for (size_t i = 0; i < n_atoms; ++i) {
         if (fgets(line, 1024, gro_file) == NULL) {
@@ -171,6 +174,9 @@ system_t *load_gro(const char *filename)
             fprintf(stderr, "Error. Could not understand line: %s", line);
             return NULL;
         }
+
+        // assign real gromacs atom number
+        system->atoms[i].gmx_atom_number = i + 1;
     }
 
     // read information about the simulation box
@@ -182,7 +188,7 @@ system_t *load_gro(const char *filename)
     }
 
     // TODO validate the input
-    short loaded_values = sscanf(line, "%f %f %f %f %f %f %f %f %f",
+    int loaded_values = sscanf(line, "%f %f %f %f %f %f %f %f %f",
     &(system->box[0]), &(system->box[1]), &(system->box[2]),
     &(system->box[3]), &(system->box[4]), &(system->box[5]), 
     &(system->box[6]), &(system->box[7]), &(system->box[8]));
@@ -216,7 +222,7 @@ int write_gro(
 
         atom_t *atom = atoms->atoms[i];
 
-        fprintf(stream, "%5d%-5s%5s%5d%8.3f%8.3f%8.3f",
+        fprintf(stream, "%5u%-5s%5s%5u%8.3f%8.3f%8.3f",
         atom->residue_number, atom->residue_name, atom->atom_name, atom->atom_number,
         atom->position[0], atom->position[1], atom->position[2]);
 
@@ -230,7 +236,7 @@ int write_gro(
     }
 
     // print box information
-    for (short i = 0; i < 9; ++i) {
+    for (int i = 0; i < 9; ++i) {
         fprintf(stream, " %9.5f", boxsize[i]);
     }
     fprintf(stream, "\n");

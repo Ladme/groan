@@ -28,7 +28,7 @@ void vec_sub(vec_t result, const vec_t subtract);
  * \param scalar    scalar to be used for multiplication
  *
  */
-void vec_mult(vec_t result, const float scalar);
+void vec_mul(vec_t result, const float scalar);
 
 /* ! \brief Divides a vector by scalar.
  *

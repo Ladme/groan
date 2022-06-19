@@ -6,36 +6,27 @@
 #ifndef GRO_H
 #define GRO_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "gen_structures/dyn_array.h"
 
-/*
- * An array of three floats.
- */
+/* Integer that fits any number that can be assigned to an atom or residue in a gro file. */
+typedef uint32_t groint_t;
+
+/* An array of three floats. */
 typedef float vec_t[3];
 
-/*
- * An array of nine floats.
- */
+/* An array of nine floats. */
 typedef float box_t[9];
 
-/*
- * Specifies whether all atoms from system or 
- * only atoms in an index list should be used.
- */
-typedef enum loop_mode {
-    all = 0,       // all atoms
-    selection = 1  // atoms from index list
-} loop_mode_t;
-
-/*
- * Structure containing all the available information about a specific atom.
- */
+/* Structure containing all the available information about a specific atom. */
 typedef struct atom {
-    int residue_number;
+    groint_t residue_number;
     char residue_name[6];
     char atom_name[6];
-    int atom_number;
+    groint_t atom_number;      /* this is an atom number as taken from gro file */
+    size_t gmx_atom_number;    /* this is an atom number as gromacs uses it */
     vec_t position;
     vec_t velocity;
 } atom_t;
@@ -45,11 +36,11 @@ typedef struct atom {
  * about the simulation box, time-step of the simulation, and the atoms in the system.
  */
 typedef struct system {
-    box_t box;
-    int step;
-    float time;
-    size_t n_atoms;
-    atom_t atoms[];
+    box_t box;           /* box dimensions */
+    int step;            /* simulation step; we use int only because the xdrfile library uses int */
+    float time;          /* simulation time in ps */
+    size_t n_atoms;      /* number of atoms in the system */
+    atom_t atoms[];      /* array of atoms in the system */
 } system_t;
 
 /*
@@ -59,6 +50,12 @@ typedef struct atom_selection {
     size_t n_atoms;
     atom_t *atoms[];
 } atom_selection_t;
+
+/* Macro shortcut for atom_selection_t.
+ * To avoid confusion, this shortcut should never be used anywhere in the core groan library code.
+ * It might however be useful in external or peripheral programs using groan library.
+ */
+#define select_t atom_selection_t
 
 /*
  * Used to specify geometry for a geometric selection of atoms.

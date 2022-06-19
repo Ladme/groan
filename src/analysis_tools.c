@@ -32,15 +32,34 @@ float distance3D(const vec_t particle1, const vec_t particle2)
     return sqrt( xd*xd + yd*yd + zd*zd );
 }
 
-int center_of_geometry(const atom_selection_t *input_atoms, vec_t center)
+int center_of_geometry(const atom_selection_t *selection, vec_t center)
 {
-    if (input_atoms == NULL || input_atoms->n_atoms == 0) return 1;
+    if (selection == NULL || selection->n_atoms == 0) return 1;
 
-    for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
-        vec_sum(center, input_atoms->atoms[i]->position);
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        vec_sum(center, selection->atoms[i]->position);
     }
 
-    vec_div(center, input_atoms->n_atoms);
+    vec_div(center, selection->n_atoms);
 
     return 0;
+}
+
+void selection_translate(atom_selection_t *selection, box_t box, vec_t trans)
+{
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        atom_t *atom = selection->atoms[i];
+        vec_sum(atom->position, trans);
+
+        // check that atom is inside the box
+        // if it's not, move it
+        if (atom->position[0] > box[0]) atom->position[0] -= box[0];
+        else if (atom->position[0] < 0) atom->position[0] += box[0];
+
+        if (atom->position[1] > box[1]) atom->position[1] -= box[1];
+        else if (atom->position[1] < 0) atom->position[1] += box[1];
+
+        if (atom->position[2] > box[2]) atom->position[2] -= box[2];
+        else if (atom->position[2] < 0) atom->position[2] += box[2];
+    }
 }

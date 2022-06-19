@@ -1,5 +1,5 @@
-groan: src/xdrfile.o src/xdrfile_xtc.o src/gro_io.o src/xtc_io.o src/analysis_tools.o src/vector.o src/selection.o
-	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/gro_io.o src/xtc_io.o src/vector.o src/selection.o src/analysis_tools.o
+groan: src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/gro_io.o src/xtc_io.o src/analysis_tools.o src/vector.o src/selection.o
+	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/gro_io.o src/xtc_io.o src/vector.o src/selection.o src/analysis_tools.o
 
 src/xdrfile.o: src/xdrfile/xdrfile.c
 	gcc -c src/xdrfile/xdrfile.c -o src/xdrfile.o -std=c99 -pedantic -Wall -O3 -march=native
@@ -21,6 +21,9 @@ src/selection.o: src/selection.c
 
 src/analysis_tools.o: src/analysis_tools.c
 	gcc -c src/analysis_tools.c -o src/analysis_tools.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native
+
+src/dyn_array.o: src/gen_structures/dyn_array.c
+	gcc -c src/gen_structures/dyn_array.c -o src/dyn_array.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native
 	
 clean:
 	rm -f *.a *.o src/*.a src/*.o

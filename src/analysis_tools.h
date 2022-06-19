@@ -29,13 +29,20 @@ float distance3D(const vec_t particle1, const vec_t particle2);
 
 /* ! \brief Calculates center of geometry for selected atoms.
  *
- * \param input_atoms           selection of atoms
+ * \param selection             selection of atoms
  * \param center                pointer to an array for saving center of geometry
  * 
  * \return Zero, if successful; else non-zero.
  */
-int center_of_geometry(const atom_selection_t *input_atoms, vec_t center);
+int center_of_geometry(const atom_selection_t *selection, vec_t center);
 
-
+/* ! \brief Translates all atoms of selection by trans. Handles basic PBC.
+ *
+ * \param selection             selection of atoms
+ * \param box                   box size
+ * \param trans                 translation vector
+ * 
+ */
+void selection_translate(atom_selection_t *selection, box_t box, vec_t trans);
 
 #endif /* ANALYSIS_TOOLS_H */

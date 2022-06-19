@@ -17,7 +17,7 @@ void vec_sub(vec_t result, const vec_t subtract)
     result[2] -= subtract[2];
 }
 
-void vec_mult(vec_t result, const float scalar)
+void vec_mul(vec_t result, const float scalar)
 {
     result[0] *= scalar;
     result[1] *= scalar;

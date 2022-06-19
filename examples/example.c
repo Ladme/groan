@@ -30,6 +30,7 @@ int main(void)
     atom_selection_t *backbone = select_atoms(all_atoms, "N CA C", &match_atom_name);
 
     // calculate peptide backbone center of geometry
+    // (vec_t is simply an array of 3 floats)
     vec_t center_prot = {0};
     if (center_of_geometry(backbone, center_prot) != 0) return 1;
 
@@ -40,6 +41,7 @@ int main(void)
     atom_selection_t *membrane_selection = select_geometry(membrane, center_prot, zcylinder, cylinder_definition);
 
     // we will not be needing "membrane" or "backbone" selections anymore, so we free them
+    // (yes, atom_selection_t is a simple structure and memory for it can deallocated simply by free())
     free(membrane);
     membrane = NULL;
     free(backbone);
@@ -55,10 +57,14 @@ int main(void)
     // here we select only those oxygens that are located inside a sphere around peptide backbone center
     // sphere definition is just a radius
     float sphere_definition = 3.0;
-    // note that we always provide pointer to the geometry definition in select_geometry()         vvvvvvvvvvvvvvvvvv
+    // note that we always provide POINTER to the geometry definition in select_geometry()         vvvvvvvvvvvvvvvvvv
     atom_selection_t *water_selection_sphere = select_geometry(water_oxygens, center_prot, sphere, &sphere_definition);
 
     // for some reason, we also want to select different water oxygens: those positioned in an arbitrary box
+    // box definition has the following format: 
+    // > first two numbers = minimal and maximal x-coordinate
+    // > next two numbers  = minimal and maximal y-coordinate
+    // > last two numbers  = minimal and maximal z-coordinate 
     float box_definition[9] = {2, 4, 0, 5, 6, 8};
     // we use coordinates x = 0, y = 0, z = 0 as an absolute reference for select_geometry()
     vec_t absolute_center = {0, 0, 0};
@@ -71,7 +77,7 @@ int main(void)
     // as we do not want multiple identical water oxygens in our final selection, we have to use selection_cat_unique()
     atom_selection_t *water_selection = selection_cat_unique(water_selection_sphere, water_selection_box);
 
-    // we can also find out how many water oxygens were shared by both selections
+    // we can also find out which water oxygens were shared by both selections
     atom_selection_t *water_intersect = selection_intersect(water_selection_sphere, water_selection_box);
     char comment[50] = "";
     sprintf(comment, "Intersecting water oxygens: %ld", water_intersect->n_atoms);
@@ -90,7 +96,9 @@ int main(void)
     atom_selection_t *final_selection = selection_cat(water_selection, membrane_selection);
 
     free(membrane_selection);
+    membrane_selection = NULL;
     free(water_selection);
+    water_selection = NULL;
 
     // now, if there is more than 0 atoms in the final selection, we write the selection into a gro file (output.gro)
     if (final_selection->n_atoms > 0) {
