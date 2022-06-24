@@ -46,15 +46,24 @@ void reset_velocities(system_t *system);
 int read_xtc_step(XDRFILE *xtc, system_t *system);
 
 
-/*! \brief Writes the current state of system to xtc file.
+/*! \brief Writes the current positions of the selected atoms to xtc file.
  * 
  * \param xtc           open XDRFILE structure corresponding to target xtc file
- * \param system        pointer to a structure containing information about the system
+ * \param selection     selection of atoms to write into xtc file
+ * \param step          current step of the simulation
+ * \param time          time of the simulation frame
+ * \param box           box size in gro format
  * \param precision     precision of the output xtc file (can't be higher than the input precision)
  *  
  * \return One if reading has been successful, else non-zero.
  */
-int write_xtc_step(XDRFILE *xtc, system_t *system, const float precision);
+int write_xtc_step(
+        XDRFILE *xtc, 
+        const atom_selection_t *selection, 
+        int step,
+        float time,
+        box_t box, 
+        float precision);
 
 
 /*! \brief Checks that the number of atoms in xtc file matches the provided number.

@@ -7,18 +7,7 @@
 #include <string.h>
 #include "gro.h"
 
-/*
- * Maximal length of the match string for the center_of_geometry function.
- */ 
-#define MAX_MATCH_STRING_LEN 100
-
-/*
- * Initial number of atom indices in selection array.
- * See function select_atoms().
- */
-#define INITIAL_SELECTION_SIZE 64
-
-/* ! \brief Splits string by delimiter and saves the substrings into an array. 
+/*! \brief Splits string by delimiter and saves the substrings into an array. 
  * 
  * \param string        string to be split
  * \param array         pointer to an array into which the substring should be saved
@@ -26,9 +15,9 @@
  * 
  * \return The number of substrings resulting from spliting. A non-positive number in case of an error.
  */
-size_t strsplit(char *string, char ***array, const char *delim);
+int strsplit(char *string, char ***array, const char *delim);
 
-/* ! \brief Compares string and the residue name of target atom.
+/*! \brief Compares string and the residue name of target atom.
  * 
  * \param atom          pointer to target \a atom_t structure
  * \param string        string to compare
@@ -37,7 +26,7 @@ size_t strsplit(char *string, char ***array, const char *delim);
  */
 int match_residue_name(const atom_t *atom, const char *string);
 
-/* ! \brief Compares string and the atom name of target atom.
+/*! \brief Compares string and the atom name of target atom.
  * 
  * \param atom          pointer to target \a atom_t structure
  * \param string        string to compare
@@ -46,7 +35,7 @@ int match_residue_name(const atom_t *atom, const char *string);
  */
 int match_atom_name(const atom_t *atom, const char *string);
 
-/* ! \brief Creates an empty atom_selection structure and allocates memory for it.
+/*! \brief Creates an empty atom_selection structure and allocates memory for it.
  * 
  * Empty atom_selection means that the n_atoms variable is set to zero.
  * Enough memory to hold 'items' atoms is allocated, though the memory can be later reallocated,
@@ -58,7 +47,7 @@ int match_atom_name(const atom_t *atom, const char *string);
  */
 atom_selection_t *selection_create(size_t items);
 
-/* ! \brief Copies an atom selection to a new selection.
+/*! \brief Copies an atom selection to a new selection.
  * 
  * This indeed returns DEEP copy of the provided selection.
  * (The atom pointers inside the selection are still pointers, of course.)
@@ -73,7 +62,7 @@ atom_selection_t *selection_copy(const atom_selection_t *selection);
 /* ! \brief Same as selection_copy() but the input selection is deallocated. */
 atom_selection_t *selection_copy_d(atom_selection_t *selection);
 
-/* ! \brief Empties an existing atom selection.
+/*! \brief Empties an existing atom selection.
  *
  * Memory is not deallocated and is left as it was.
  * 
@@ -86,7 +75,7 @@ atom_selection_t *selection_copy_d(atom_selection_t *selection);
  */
 void selection_empty(atom_selection_t *selection);
 
-/* ! \brief Adds pointer to a target atom to target atom selection.
+/*! \brief Adds pointer to a target atom to target atom selection.
  *
  * Handles reallocation and increments the n_atoms counter in the selection.
  * 
@@ -100,7 +89,7 @@ void selection_add_atom(
         size_t *allocated_atoms,
         atom_t *atom);
 
-/* ! \brief Selects specified atoms from atom selection.
+/*! \brief Selects specified atoms from atom selection.
  * 
  * Loops through the atoms in input_atoms, matching them against
  * the individual elements in the match_string.
@@ -123,13 +112,13 @@ atom_selection_t *select_atoms(
         const char *match_string,
         int (*match_function)(const atom_t *, const char *));
 
-/* ! \brief Same as select_atoms() but the input selection is deallocated. */
+/*! \brief Same as select_atoms() but the input selection is deallocated. */
 atom_selection_t *select_atoms_d(
         atom_selection_t *input_atoms,
         const char *match_string,
         int (*match_function)(const atom_t *, const char *));
 
-/* ! \brief Selects ALL atoms from system.
+/*! \brief Selects ALL atoms from system.
  *
  * Creates atom_selection structure for all atoms in the system.
  *
@@ -139,7 +128,7 @@ atom_selection_t *select_atoms_d(
  */
 atom_selection_t *select_system(system_t *system);
 
-/* ! \brief Concatenates two atom selections.
+/*! \brief Concatenates two atom selections.
  *
  * Allocates enough memory for the output selection.
  * Does NOT destroy or deallocate any of the input selections.
@@ -156,7 +145,7 @@ atom_selection_t *selection_cat(const atom_selection_t *selection1, const atom_s
 /* ! \brief Same as selection_cat() but the input selections are both deallocated. */
 atom_selection_t *selection_cat_d(atom_selection_t *selection1, atom_selection_t *selection2);
 
-/* ! \brief Concatenates two atom selections while removing duplicate atoms.
+/*! \brief Concatenates two atom selections while removing duplicate atoms.
  *
  * Allocates enough memory for the output selection.
  * Does NOT destroy or deallocate any of the input selections.
@@ -178,10 +167,10 @@ atom_selection_t *selection_cat_d(atom_selection_t *selection1, atom_selection_t
  */
 atom_selection_t *selection_cat_unique(const atom_selection_t *selection1, const atom_selection_t *selection2);
 
-/* ! \brief Same as selection_cat_unique() but the input selections are both deallocated. */
+/*! \brief Same as selection_cat_unique() but the input selections are both deallocated. */
 atom_selection_t *selection_cat_unique_d(atom_selection_t *selection1, atom_selection_t *selection2);
 
-/* ! \brief Creates an atom selection which is an intersection of the provided selections.
+/*! \brief Creates an atom selection which is an intersection of the provided selections.
  *
  * Allocates enough memory for the output selection.
  * Does NOT destroy or deallocate any of the input selections.
@@ -193,10 +182,10 @@ atom_selection_t *selection_cat_unique_d(atom_selection_t *selection1, atom_sele
  */
 atom_selection_t *selection_intersect(const atom_selection_t *selection1, const atom_selection_t *selection2);
 
-/* ! \brief Same as selection_intersect() but the input selections are both deallocated. */
+/*! \brief Same as selection_intersect() but the input selections are both deallocated. */
 atom_selection_t *selection_intersect_d(atom_selection_t *selection1, atom_selection_t *selection2);
 
-/* ! \brief Removes an atom from atom selection.
+/*! \brief Removes an atom from atom selection.
  *
  * If there are multiple identical atoms (meaning if there are multiple pointers to the same atom in system),
  * ALL of them will be removed.
@@ -210,7 +199,7 @@ atom_selection_t *selection_intersect_d(atom_selection_t *selection1, atom_selec
  */ 
 size_t selection_remove_atom(atom_selection_t *selection, atom_t *remove);
 
-/* ! \brief Removes atoms which are part of selection_sub from selection_result.
+/*! \brief Removes atoms which are part of selection_sub from selection_result.
  *
  * The amount of memory allocated to any selection is not changed by this function.
  * This is a pretty dumb and inefficient function as it simply consists of calling...
@@ -224,10 +213,10 @@ size_t selection_remove_atom(atom_selection_t *selection, atom_t *remove);
  */ 
 size_t selection_remove(atom_selection_t *selection_result, const atom_selection_t *selection_sub);
 
-/* ! \brief Same as selection_remove() but the selection_sub is deallocated. */
+/*! \brief Same as selection_remove() but the selection_sub is deallocated. */
 size_t selection_remove_d(atom_selection_t *selection_result, atom_selection_t *selection_sub);
 
-/* ! \brief Removes all duplicit entries in the selection.
+/*! \brief Removes all duplicit entries in the selection.
  *
  * Keeps the other atoms in the same order. Does not deallocate memory.
  * 
@@ -237,7 +226,7 @@ size_t selection_remove_d(atom_selection_t *selection_result, atom_selection_t *
  */
 size_t selection_unique(atom_selection_t *selection);
 
-/* ! \brief Compares two atom selections.
+/*! \brief Compares two atom selections.
  *
  * The function proclaims two selections as identical
  * if they contain the same atoms. 
@@ -254,7 +243,7 @@ int selection_compare(
         const atom_selection_t *selection1, 
         const atom_selection_t *selection2);
 
-/* ! \brief Compares two atom selections STRICTLY.
+/*! \brief Compares two atom selections STRICTLY.
  *
  * The function proclaims two selections as identical
  * if they contain the same atoms IN THE SAME ORDER.
@@ -270,7 +259,7 @@ int selection_compare_strict(
         const atom_selection_t *selection1, 
         const atom_selection_t *selection2);
 
-/* ! \brief Renumbers atoms of a selection.
+/*! \brief Renumbers atoms of a selection.
  *
  * Atoms and the corresponsing residues in a selection are renumbered based
  * on their position in the selection.
@@ -296,7 +285,7 @@ int selection_compare_strict(
  */ 
 void selection_renumber(atom_selection_t *selection);
 
-/* ! \brief Sorts the atoms in a selection based on the atom number.
+/*! \brief Sorts the atoms in a selection based on the atom number.
  *
  * The behavior of this function is UNDEFINED when applied to 
  * selection containing duplicate atoms.
@@ -306,7 +295,7 @@ void selection_renumber(atom_selection_t *selection);
  */ 
 void selection_sort(atom_selection_t *selection);
 
-/* ! \brief Sorts the atoms in a selection based on the gmx atom number.
+/*! \brief Sorts the atoms in a selection based on the gmx atom number.
  *
  * The behavior of this function is UNDEFINED when applied to 
  * selection containing duplicate atoms.
@@ -315,7 +304,7 @@ void selection_sort(atom_selection_t *selection);
  */ 
 void selection_sort_gmx(atom_selection_t *selection);
 
-/* ! \brief Fixes split residues in a selection.
+/*! \brief Fixes split residues in a selection.
  *
  * Changes the order of atoms in a selection in such a way
  * that all atoms of every residue are located right after each other.
@@ -333,7 +322,7 @@ void selection_sort_gmx(atom_selection_t *selection);
  */ 
 void selection_fixres(atom_selection_t *selection);
 
-/* ! \brief Creates a new system_t structure from provided atom selection.
+/*! \brief Creates a new system_t structure from provided atom selection.
  * 
  * Atoms pointed at by selection are DEEP copied to new system_t structure.
  * 
@@ -348,7 +337,7 @@ void selection_fixres(atom_selection_t *selection);
  * renumbered based on their position in the selection.
  * 
  * Any split residues are fixed by sorting the residue atoms by gmx atom numbers.
- * In other cases, the function maintains the order of the atoms in the selection.
+ * In case of other residues, the function maintains the order of the atoms in the selection.
  * 
  * New atoms are asigned new gmx atom numbers based on their position in the new system.
  * 
@@ -374,14 +363,14 @@ system_t *selection_to_system(
         const int step, 
         const float time);
 
-/* ! \brief Same as selection_to_system() but the input selection is deallocated. */
+/*! \brief Same as selection_to_system() but the input selection is deallocated. */
 system_t *selection_to_system_d(
         atom_selection_t *selection, 
         const box_t box, 
         const int step, 
         const float time);
 
-/* ! \brief Selects atoms based on specified geometric property.
+/*! \brief Selects atoms based on specified geometric property.
  *
  * Selects atoms from input_atoms located inside a specified area and
  * add them to a new atom selection.
@@ -414,11 +403,78 @@ atom_selection_t *select_geometry(
         const geometry_t geometry,
         const void *geometry_definition);
 
-/* ! \brief Same as select_geometry() but the input selection is deallocated. */
+/*! \brief Same as select_geometry() but the input selection is deallocated. */
 atom_selection_t *select_geometry_d(
         atom_selection_t *input_atoms,
         const vec_t center,
         const geometry_t geometry,
         const void *geometry_definition);
+
+
+/*! \brief Selects atoms based on provided string query. 
+ *
+ * \paragraph Supported queries
+ * Currently the number of supported queries is not large.
+ * You can select atoms based on their:
+ *      > residue name, e.g. by using 'resname RESNAME1 RESNAME2'
+ *        (all atoms with residue names RESNAME1 or RESNAME2 will be selected)
+ *      > atom name, e.g. by using 'name ATOMNAME1 ATOMNAM2 ATOMNAME3'
+ *      > atom number, e.g. by using 'serial ATOMNUM1 ATOMNUM2 ATOMNUM3 ATOMNUM4'
+ *        (note that gmx atom numbers will be used, not those atom numbers that are provided in gro file)
+ *      > ndx group name, e.g. by using 'Protein'
+ * Currently, combining the individual selection keywords is not supported.
+ * You can do that manually by using various selection commands.
+ * 
+ * \paragraph Maximal query length
+ * Maximal length of the query is 99 characters. Anything above this number will lead to undefined behavior.
+ * 
+ * \paragraph Note on memory deallocation
+ * The selection returned by this function must ALWAYS be freed when it is not needed anymore.
+ * This holds true even for selections originating from the ndx_groups dictionary (which you usually do not free separately).
+ * 
+ * \param selection             selection of atoms to choose from
+ * \param query                 query to be parsed
+ * \param ndx_groups            dictionary containing definitions of the ndx group (use read_ndx() to obtain it)
+ * 
+ * \return Pointer to the atom selection. NULL in case the parsing fails. If query is NULL, returns pointer to selection.
+ * 
+ */
+atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups);
+
+
+/*! \brief Reads an ndx file creating atom selection for each index group.
+ *
+ * \paragraph Structure of the output dictionary
+ * Index groups and their atoms are saved into dictionary, pointer to
+ * which is returned by this function. Keys are group names as defined
+ * in the index file and values are atom_selection_t structures. Even
+ * groups with no atoms are included in this dictionary.
+ * 
+ * \paragraph Selecting group from the dictionary
+ * Use function dict_get() and typecast the returning value as (atom_selection_t *).
+ * 
+ * \paragraph Deallocating the dictionary
+ * The dictionary returned by this function must be deallocated when it is no longer
+ * needed by using dict_destroy(). The atom selections from this dictionary
+ * should NOT be freed separately.
+ * 
+ * \paragraph On checking sanity of the input
+ * Note that the function does NOT check whether all atoms are assigned to at least one index group
+ * and it also does NOT check whether a group contains multiple identical atoms.
+ * The function however DOES raise error, if it encounters an atom with an unknown atom number.
+ * You can remove any duplicate atoms afterwards by applying selection_unique() to the individual atom selections.
+ * 
+ * \paragraph On atom sorting
+ * This function SHOULD work also for systems in which atoms are not sorted
+ * by their gmx_atom_number, this behavior is however untested!
+ * (Unless you are doing really shady stuff, the above note does not concern you at all.)
+ * 
+ * \param filename              path to the ndx file
+ * \param system                pointer to a system_t structure
+ * 
+ * \return Pointer to dictionary containing group_name->atom_selection pairs. NULL in case the reading fails.
+ * 
+ */
+dict_t *read_ndx(const char *filename, system_t *system);
 
 #endif /* SELECTION_H */

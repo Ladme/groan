@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include "general_structs/vector.h"
 #include "general_structs/dyn_array.h"
+#include "general_structs/dict.h"
 
 /* Integer that fits any number that can be assigned to an atom or residue in a gro file. */
 typedef uint32_t groint_t;
@@ -37,6 +38,7 @@ typedef struct system {
     box_t box;           /* box dimensions */
     int step;            /* simulation step; we use int only because the xdrfile library uses int */
     float time;          /* simulation time in ps */
+    float precision;     /* input precision of positions*/
     size_t n_atoms;      /* number of atoms in the system */
     atom_t atoms[];      /* array of atoms in the system */
 } system_t;
@@ -81,5 +83,14 @@ typedef enum plane {
         xz,
         yz
 } plane_t;
+
+/*
+ * Used to specify dimension.
+ */
+typedef enum dimension {
+        x,
+        y,
+        z
+} dimension_t;
 
 #endif /* GRO_H */

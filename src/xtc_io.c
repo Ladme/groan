@@ -27,13 +27,12 @@ void reset_velocities(system_t *system)
 int read_xtc_step(XDRFILE *xtc, system_t *system)
 {
     float box[3][3] = {0};
-    float prec = 0.;
 
     // allocate memory for an array of coordinates
     // this is a 2D array of [n_atoms][3] floats
     vec_t *coordinates = malloc(system->n_atoms * sizeof(vec_t));
 
-    if (read_xtc(xtc, system->n_atoms, &(system->step), &(system->time), box, coordinates, &prec) != 0) {
+    if (read_xtc(xtc, system->n_atoms, &(system->step), &(system->time), box, coordinates, &(system->precision)) != 0) {
         free(coordinates);
         return 1;
     }
@@ -56,19 +55,25 @@ int read_xtc_step(XDRFILE *xtc, system_t *system)
     return 0;
 }
 
-int write_xtc_step(XDRFILE *xtc, system_t *system, const float precision)
+int write_xtc_step(
+        XDRFILE *xtc, 
+        const atom_selection_t *selection, 
+        int step,
+        float time,
+        box_t box, 
+        float precision)
 {
-    float box[3][3] = {{0.}};
-    box_gro2xtc(system->box, box);
+    float xtc_box[3][3] = {{0.}};
+    box_gro2xtc(box, xtc_box);
 
     // extract atom coordinates from system
-    vec_t *coordinates = malloc(system->n_atoms * sizeof(vec_t));
-    for (size_t i = 0; i < system->n_atoms; ++i) {
-        memcpy(coordinates[i], system->atoms[i].position, 3 * sizeof(float));
+    vec_t *coordinates = malloc(selection->n_atoms * sizeof(vec_t));
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        memcpy(coordinates[i], selection->atoms[i]->position, 3 * sizeof(float));
     }
 
     // write xtc step
-    if (write_xtc(xtc, system->n_atoms, system->step, system->time, box, coordinates, precision) != 0) {
+    if (write_xtc(xtc, selection->n_atoms, step, time, xtc_box, coordinates, precision) != 0) {
         free(coordinates);
         return 1;
     };

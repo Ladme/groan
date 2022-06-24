@@ -4,6 +4,13 @@
 #include "selection.h"
 #include "analysis_tools.h"
 
+
+/*! \brief Maximal length of the match string for the center_of_geometry function. */
+static const size_t MAX_MATCH_STRING_LEN = 100;
+
+/*! \brief Initial number of atom indices in selection array. See function select_atoms(). */
+static const size_t INITIAL_SELECTION_SIZE = 64;
+
 /* Simple function for qsort comparison of atom numbers */
 static int compare_atomnum(const void *x, const void *y)
 {
@@ -22,7 +29,7 @@ static int compare_gmxatomnum(const void *x, const void *y)
     return ( atom1->gmx_atom_number - atom2->gmx_atom_number );
 }
 
-size_t strsplit(char *string, char ***array, const char *delim)
+int strsplit(char *string, char ***array, const char *delim)
 {
     // allocate memory for array
     size_t allocated_items = 2;
@@ -69,6 +76,17 @@ int match_atom_name(const atom_t *atom, const char *string)
 {
     if (string == NULL) return 1;
     return !strcmp(atom->atom_name, string);
+}
+
+/*! \brief Compares the provided string containing a number with GMX_ATOM_NUMER. */
+int match_atom_num(const atom_t *atom, const char *string)
+{
+    if (string == NULL) return 1;
+    size_t atom_num = 0;
+    if (sscanf(string, "%zu", &atom_num) != 1) {
+        return 0;
+    }
+    return (atom->gmx_atom_number == atom_num);
 }
 
 atom_selection_t *selection_create(size_t items)
@@ -137,13 +155,13 @@ atom_selection_t *select_atoms(
     
     // next do the actual splitting
     char **elements = NULL;
-    size_t n_elements = strsplit(to_match, &elements, " ");
+    int n_elements = strsplit(to_match, &elements, " ");
     if (n_elements <= 0) return 0;
 
     // loop through atoms
     for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
         // and for each atom try matching the match function to individual match elements
-        for (size_t j = 0; j < n_elements; ++j) {
+        for (int j = 0; j < n_elements; ++j) {
             if (match_function(input_atoms->atoms[i], elements[j])) {
 
                 selection_add_atom(&output_atoms, &alloc_ids, input_atoms->atoms[i]);
@@ -597,7 +615,7 @@ atom_selection_t *select_geometry(
 
             if (atom->position[index] - center[index] > cyl_def[1] && 
                 atom->position[index] - center[index] < cyl_def[2] &&
-                distance2D(atom->position, center, plane) < cyl_def[0]) {
+                distance2D_naive(atom->position, center, plane) < cyl_def[0]) {
                     selection_add_atom(&output_atoms, &alloc_ids, atom);
                 }
 
@@ -617,7 +635,7 @@ atom_selection_t *select_geometry(
         } else if (geometry == sphere) {
             const float *sphere_def = (float *) geometry_definition;
 
-            if (distance3D(atom->position, center) < *sphere_def) {
+            if (distance3D_naive(atom->position, center) < *sphere_def) {
                 selection_add_atom(&output_atoms, &alloc_ids, atom);
             }
         }
@@ -636,4 +654,156 @@ atom_selection_t *select_geometry_d(
     atom_selection_t *output = select_geometry(input_atoms, center, geometry, geometry_definition);
     free(input_atoms);
     return output;
+}
+
+atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups)
+{
+    if (selection == NULL) return NULL;
+    if (query == NULL) return selection;
+
+    // select atoms based on residues
+    if (strlen(query) >= 8 && memcmp(query, "resname", 7) == 0) {
+        return select_atoms(selection, query + 7, &match_residue_name);
+    // select atoms based on residues
+    } else if (strlen(query) >= 5 && memcmp(query, "name", 4) == 0) {
+        return select_atoms(selection, query + 4, &match_atom_name);
+    // select atoms based on atom numbers
+    } else if (strlen(query) >= 7 && memcmp(query, "serial", 6) == 0) {
+        return select_atoms(selection, query + 6, &match_atom_num);
+    // select atoms based on ndx groups
+    } else if (ndx_groups != NULL) {
+        // we have to copy the selection so we can then free it without disrupting the dictionary
+        atom_selection_t *original = (atom_selection_t *) dict_get(ndx_groups, query);
+        if (original == NULL) return NULL;
+        
+        atom_selection_t *copy = selection_copy(original);
+        return copy;
+    }
+
+    return NULL;
+}
+
+
+dict_t *read_ndx(const char *filename, system_t *system)
+{
+    FILE *ndx = fopen(filename, "r");
+    if (ndx == NULL) {
+        return NULL;
+    }
+
+    dict_t *ndx_selections = dict_create();
+    if (ndx_selections == NULL) {
+        fclose(ndx);
+        return NULL;
+    }
+
+    char line[1024] = "";
+    char **split = NULL;
+    char current_group[100] = "";
+    atom_selection_t *current_selection = NULL;
+    size_t alloc_atoms = 0;
+    while (fgets(line, 1024, ndx) != NULL) {
+        int n_items = strsplit(line, &split, " ");
+
+        // negative n_items means that an error has occured
+        if (n_items < 0) {
+            dict_destroy(ndx_selections);
+            free(split);
+            fclose(ndx);
+            return NULL;
+        }
+
+        // zero means that the line is completely empty
+        else if (n_items == 0) {
+            free(split);
+            split = NULL;
+            continue;
+        }
+
+        // one may also mean that the line is empty
+        else if (n_items == 1 && strcmp(split[0], "\n") == 0) {
+            free(split);
+            split = NULL;
+            continue;
+        }
+
+        // if three items are detected, try getting the group name
+        else if (n_items == 3 && strcmp(split[0], "[") == 0) {
+            if (strcmp(split[2], "]\n") == 0) {
+                // if group name is detected, add the previous selection to the dictionary
+                if (current_selection != NULL) {
+                    dict_set(ndx_selections, current_group, current_selection, sizeof(atom_selection_t) + alloc_atoms * sizeof(atom_t *));
+                    free(current_selection);
+                }
+
+                strncpy(current_group, split[1], 99);
+                alloc_atoms = INITIAL_SELECTION_SIZE;
+                current_selection = selection_create(alloc_atoms);
+                free(split);
+                split = NULL;
+                continue;
+
+            // if there is initial [, but no closing ], raise an error
+            } else {
+                free(current_selection);
+                dict_destroy(ndx_selections);
+                free(split);
+                fclose(ndx);
+                return NULL;
+            }
+        }
+
+        // load all atoms to current selection
+        for (int i = 0; i < n_items; ++i) {
+            size_t atom_n = 0;
+
+            // load atom number
+            if (sscanf(split[i], "%lu", &atom_n) != 1) {
+                free(current_selection);
+                dict_destroy(ndx_selections);
+                free(split);
+                fclose(ndx);
+                return NULL;   
+            }
+
+            // we test whether the atom actually has the correct gmx_atom_number
+            // if not, we loop through the entire array searching for the correct atom
+            // this may seem unnecessary, but the atoms in the system do not have to be sorted based on gmx_atom_number 
+            if ((atom_n - 1) < system->n_atoms && system->atoms[atom_n - 1].gmx_atom_number == atom_n) {
+                selection_add_atom(&current_selection, &alloc_atoms, &system->atoms[atom_n - 1]);
+                continue;
+            }
+
+            // for broken systems, we have to use this
+            for (size_t j = 0; j < system->n_atoms; ++j) {
+                if (system->atoms[j].gmx_atom_number == atom_n) {
+                    selection_add_atom(&current_selection, &alloc_atoms, &system->atoms[j]);
+                    break;
+                }
+            }
+
+            // if no suitable atom has been found
+            free(current_selection);
+            dict_destroy(ndx_selections);
+            free(split);
+            fclose(ndx);
+            return NULL;
+        }
+        
+        // free the array of splitted line
+        free(split);
+        split = NULL;
+
+    }
+
+    // add the last ndx group
+    if (current_selection != NULL) {
+        dict_set(ndx_selections, current_group, current_selection, sizeof(atom_selection_t) + alloc_atoms * sizeof(atom_t *));
+        free(current_selection);
+    }
+
+    free(split);
+    fclose(ndx);
+
+    return ndx_selections;
 }

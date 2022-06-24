@@ -157,8 +157,8 @@ system_t *load_gro(const char *filename)
     }
     memset(system, 0, sizeof(system_t) + n_atoms * sizeof(atom_t));
     system->n_atoms = n_atoms;
+    system->precision = 1000.;
 
-    
     // read lines in gro file and load atoms
     for (size_t i = 0; i < n_atoms; ++i) {
         if (fgets(line, 1024, gro_file) == NULL) {
