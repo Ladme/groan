@@ -6,6 +6,10 @@ C library for analysis of Gromacs simulations.
 
 Just run `make`.
 
+## Tests
+
+Validate the installation by running `./tests` in the `test` directory. Do not remove the `examples` directory as the tests use several files located in there.
+
 ## How to use in your C programs
 
 Include `groan.h` in your code and link with `-lm -lgroan`.
