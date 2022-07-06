@@ -18,7 +18,7 @@ typedef enum write_mode {
     velocities = 1
 } write_mode_t;
 
-/* ! \brief Checks whether the string can be converted into a valid decimal integer.
+/*! \brief Checks whether the string can be converted into a valid decimal integer.
  * 
  * \param string    string to check
  * 
@@ -27,7 +27,7 @@ typedef enum write_mode {
  */
 int isdecimal(const char *string);
 
-/* ! \brief Checks whether the string can be converted into a valid decimal float.
+/*! \brief Checks whether the string can be converted into a valid decimal float.
  * 
  * \param string    string to check
  * 
@@ -36,7 +36,7 @@ int isdecimal(const char *string);
  */
 int isdecimalf(const char *string);
 
-/* ! \brief Slices a string into a substring of target length starting from target position.
+/*! \brief Slices a string into a substring of target length starting from target position.
  *
  * Does not check array boundaries. The substring is terminated with '\0'.
  * 
@@ -47,7 +47,7 @@ int isdecimalf(const char *string);
  */ 
 void get_fragment(const char *src, char *dest, const size_t start, const size_t len);
 
-/* ! \brief Reads a target part of line and parses it into a gro integer (groint_t).
+/*! \brief Reads a target part of line and parses it into a gro integer (groint_t).
  * 
  * Uses get_fragment() function to slice the line.
  * 
@@ -60,7 +60,7 @@ void get_fragment(const char *src, char *dest, const size_t start, const size_t 
  */
 int parse_int(const char *line, const size_t start, const size_t len, groint_t *element);
 
-/* ! \brief Reads a target part of line, trims it and copies it to the provided pointer.
+/*! \brief Reads a target part of line, trims it and copies it to the provided pointer.
  * 
  * Uses get_fragment() function to slice the line.
  * 
@@ -73,7 +73,7 @@ int parse_int(const char *line, const size_t start, const size_t len, groint_t *
  */
 int parse_string(const char *line, const size_t start, const size_t len, char *element);
 
-/* ! \brief Reads a target part of line and parses it into a float.
+/*! \brief Reads a target part of line and parses it into a float.
  * 
  * Uses get_fragment() function to slice the line.
  * 
@@ -86,7 +86,7 @@ int parse_string(const char *line, const size_t start, const size_t len, char *e
  */
 int parse_float(const char *line, const size_t start, const size_t len, float *element);
 
-/* ! \brief Parses a single line of a gro file, reading information about a single atom.
+/*! \brief Parses a single line of a gro file, reading information about a single atom.
  * 
  * \param line      line to parse
  * \param atom      pointer to an atom which information is read
@@ -95,9 +95,9 @@ int parse_float(const char *line, const size_t start, const size_t len, float *e
  */
 int parse_gro_line(const char *line, atom_t *atom);
 
-/* ! \brief Reads a gro file and loads information about the atoms.
+/*! \brief Reads a gro file and loads information about the atoms.
  * 
- * Note on atom numbering:
+ * \par Note on atom numbering
  * Gro files only support atom numbers of <100,000.
  * If there are more atoms, the atom number wraps, starting from 1 again.
  * Atom_number in the atom_t structure represents the real atom_number from the gro file.
@@ -116,7 +116,7 @@ int parse_gro_line(const char *line, atom_t *atom);
  */
 system_t *load_gro(const char *filename);
 
-/* ! \brief Prints information about the selected atoms in gro format into stream.
+/*! \brief Prints information about the selected atoms in gro format into stream.
  * 
  * \param stream            output stream for printing (e.g. stdout)
  * \param atoms             selection of atoms to be printed

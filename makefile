@@ -1,5 +1,6 @@
 groan: src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/dict.o src/gro_io.o src/xtc_io.o src/analysis_tools.o src/vector.o src/selection.o
 	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/dict.o src/gro_io.o src/xtc_io.o src/vector.o src/selection.o src/analysis_tools.o
+	make tests
 
 src/xdrfile.o: src/xdrfile/xdrfile.c
 	gcc -c src/xdrfile/xdrfile.c -o src/xdrfile.o -std=c99 -pedantic -Wall -O3 -march=native
@@ -33,3 +34,7 @@ clean:
 
 example: examples/example.c
 	gcc examples/example.c -L. -I. -lm -lgroan -std=c99 -pedantic -Wall -Wextra -DCREATEEXAMPLE -o examples/example
+
+tests: tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c
+	gcc tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c -L. -I. -lm -lgroan -std=c99 -pedantic -Wall -Wextra -O3 -march=native -o tests/tests
+

@@ -81,6 +81,19 @@ float distance2D_naive(const vec_t particle1, const vec_t particle2, const plane
     return sqrtf( dim1_d*dim1_d + dim2_d*dim2_d );
 }
 
+float distance3D(const vec_t particle1, const vec_t particle2, const box_t box)
+{
+    float xd = particle1[0] - particle2[0];
+    float yd = particle1[1] - particle2[1];
+    float zd = particle1[2] - particle2[2];
+
+    min_image(&xd, box[0] / 2, box[0]);
+    min_image(&yd, box[1] / 2, box[1]);
+    min_image(&zd, box[2] / 2, box[2]);
+
+    return sqrtf( xd*xd + yd*yd + zd*zd );
+}
+
 float distance3D_naive(const vec_t particle1, const vec_t particle2)
 {
     float xd = particle1[0] - particle2[0];

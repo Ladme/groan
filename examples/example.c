@@ -32,13 +32,13 @@ int main(void)
     // calculate peptide backbone center of geometry
     // (vec_t is simply an array of 3 floats)
     vec_t center_prot = {0};
-    if (center_of_geometry(backbone, center_prot) != 0) return 1;
+    if (center_of_geometry(backbone, center_prot, system->box) != 0) return 1;
 
     // define properties of a cylinder for geometric selection of atoms
     // {radius, bottom of the cylinder, top of the cylinder}
     float cylinder_definition[3] = {2.5, -1, 1.5};
     // from membrane, select atoms located inside a cylinder positioned in the peptide center of geometry
-    atom_selection_t *membrane_selection = select_geometry(membrane, center_prot, zcylinder, cylinder_definition);
+    atom_selection_t *membrane_selection = select_geometry(membrane, center_prot, zcylinder, cylinder_definition, system->box);
 
     // we will not be needing "membrane" or "backbone" selections anymore, so we free them
     // (yes, atom_selection_t is a simple structure and memory for it can deallocated simply by free())
@@ -58,7 +58,7 @@ int main(void)
     // sphere definition is just a radius
     float sphere_definition = 3.0;
     // note that we always provide POINTER to the geometry definition in select_geometry()         vvvvvvvvvvvvvvvvvv
-    atom_selection_t *water_selection_sphere = select_geometry(water_oxygens, center_prot, sphere, &sphere_definition);
+    atom_selection_t *water_selection_sphere = select_geometry(water_oxygens, center_prot, sphere, &sphere_definition, system->box);
 
     // for some reason, we also want to select different water oxygens: those positioned in an arbitrary box
     // box definition has the following format: 
@@ -68,7 +68,7 @@ int main(void)
     float box_definition[9] = {2, 4, 0, 5, 6, 8};
     // we use coordinates x = 0, y = 0, z = 0 as an absolute reference for select_geometry()
     vec_t absolute_center = {0, 0, 0};
-    atom_selection_t *water_selection_box = select_geometry(water_oxygens, absolute_center, box, box_definition);
+    atom_selection_t *water_selection_box = select_geometry(water_oxygens, absolute_center, box, box_definition, system->box);
 
     free(water_oxygens);
     water_oxygens = NULL;

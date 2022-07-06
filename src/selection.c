@@ -5,7 +5,7 @@
 #include "analysis_tools.h"
 
 
-/*! \brief Maximal length of the match string for the center_of_geometry function. */
+/*! \brief Maximal length of the match string for matching residue/atom names or numbers (including \0). */
 static const size_t MAX_MATCH_STRING_LEN = 100;
 
 /*! \brief Initial number of atom indices in selection array. See function select_atoms(). */
@@ -40,6 +40,7 @@ int strsplit(char *string, char ***array, const char *delim)
     char *word;
     if ((word = strtok(string, delim)) == NULL) {
         free(*array);
+        *array = NULL;
         return 0;
     }
 
@@ -54,6 +55,7 @@ int strsplit(char *string, char ***array, const char *delim)
             char **new_array = realloc(*array, allocated_items * sizeof(char *));
             if (new_array == NULL) {
                 free(*array);
+                *array = NULL;
                 return 0;
             }
 
@@ -78,7 +80,6 @@ int match_atom_name(const atom_t *atom, const char *string)
     return !strcmp(atom->atom_name, string);
 }
 
-/*! \brief Compares the provided string containing a number with GMX_ATOM_NUMER. */
 int match_atom_num(const atom_t *atom, const char *string)
 {
     if (string == NULL) return 1;
@@ -156,7 +157,11 @@ atom_selection_t *select_atoms(
     // next do the actual splitting
     char **elements = NULL;
     int n_elements = strsplit(to_match, &elements, " ");
-    if (n_elements <= 0) return 0;
+    if (n_elements <= 0) {
+        free(elements);
+        free(to_match);
+        return output_atoms;
+    }
 
     // loop through atoms
     for (size_t i = 0; i < input_atoms->n_atoms; ++i) {
@@ -523,6 +528,15 @@ void selection_fixres(atom_selection_t *selection)
     free(residue_numbers);
 }
 
+int selection_isin(atom_selection_t *selection, atom_t *atom)
+{
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        if (atom == selection->atoms[i]) return 1;
+    }
+
+    return 0;
+}
+
 system_t *selection_to_system(
         const atom_selection_t *selection, 
         const box_t box, 
@@ -582,7 +596,8 @@ atom_selection_t *select_geometry(
         const atom_selection_t *input_atoms,
         const vec_t center,
         const geometry_t geometry,
-        const void *geometry_definition)
+        const void *geometry_definition,
+        const box_t system_box)
 {
     // allocate memory for output_atoms
     size_t alloc_ids = INITIAL_SELECTION_SIZE;
@@ -599,43 +614,45 @@ atom_selection_t *select_geometry(
             const float *cyl_def = (float *) geometry_definition;
             
             // settings for zcylinder
-            short index = 2;
             plane_t plane = xy;
+            dimension_t line = z;
 
             // settings for xcylinder
             if (geometry == xcylinder) {
-                index = 0;
                 plane = yz;
+                line = x;
             } 
             // settings for ycylinder
             else if (geometry == ycylinder) {
-                index = 1;
                 plane = xz;
+                line = y;
             }
 
-            if (atom->position[index] - center[index] > cyl_def[1] && 
-                atom->position[index] - center[index] < cyl_def[2] &&
-                distance2D_naive(atom->position, center, plane) < cyl_def[0]) {
+            float dist1d = distance1D(atom->position, center, line, system_box);
+
+            if (dist1d > cyl_def[1] && dist1d < cyl_def[2] &&
+                distance2D(atom->position, center, plane, system_box) < cyl_def[0]) {
                     selection_add_atom(&output_atoms, &alloc_ids, atom);
                 }
 
         } else if (geometry == box) {
             const float *box_def = (float *) geometry_definition;
 
-            // compare all three dimensions of the box (this is INTENTIONALLY unrolled loop)
-            if (atom->position[0] - center[0] > box_def[0] && 
-                atom->position[0] - center[0] < box_def[1] && 
-                atom->position[1] - center[1] > box_def[2] &&
-                atom->position[1] - center[1] < box_def[3] &&
-                atom->position[2] - center[2] > box_def[4] &&
-                atom->position[2] - center[2] < box_def[5]) {
+            float dist_x = distance1D(atom->position, center, x, system_box);
+            float dist_y = distance1D(atom->position, center, y, system_box);
+            float dist_z = distance1D(atom->position, center, z, system_box);
+
+            // compare all three dimensions of the box
+            if (dist_x > box_def[0] && dist_x < box_def[1] && 
+                dist_y > box_def[2] && dist_y < box_def[3] &&
+                dist_z > box_def[4] && dist_z < box_def[5]) {
                     selection_add_atom(&output_atoms, &alloc_ids, atom);
                 }
 
         } else if (geometry == sphere) {
             const float *sphere_def = (float *) geometry_definition;
 
-            if (distance3D_naive(atom->position, center) < *sphere_def) {
+            if (distance3D(atom->position, center, system_box) < *sphere_def) {
                 selection_add_atom(&output_atoms, &alloc_ids, atom);
             }
         }
@@ -649,18 +666,31 @@ atom_selection_t *select_geometry_d(
         atom_selection_t *input_atoms,
         const vec_t center,
         const geometry_t geometry,
-        const void *geometry_definition)
+        const void *geometry_definition,
+        const box_t system_box)
 {
-    atom_selection_t *output = select_geometry(input_atoms, center, geometry, geometry_definition);
+    atom_selection_t *output = select_geometry(input_atoms, center, geometry, geometry_definition, system_box);
     free(input_atoms);
     return output;
 }
 
 atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups)
 {
-    if (selection == NULL) return NULL;
-    if (query == NULL) return selection;
+    // check that the query is valid
+    if (query == NULL) {
+        atom_selection_t *copy = selection_copy(selection);
+        return copy;
+    };
 
+    // check the query length
+    char *pos = strchr(query, 0);
+    if (pos == NULL || strlen(query) > 99) {
+        return NULL;
+    }
+
+    // check that the selection is valid
+    if (selection == NULL) return NULL;
+    
     // select atoms based on residues
     if (strlen(query) >= 8 && memcmp(query, "resname", 7) == 0) {
         return select_atoms(selection, query + 7, &match_residue_name);
@@ -703,6 +733,9 @@ dict_t *read_ndx(const char *filename, system_t *system)
     atom_selection_t *current_selection = NULL;
     size_t alloc_atoms = 0;
     while (fgets(line, 1024, ndx) != NULL) {
+        // remove newline character
+        line[strcspn(line, "\n")] = 0;
+        // split the line
         int n_items = strsplit(line, &split, " ");
 
         // negative n_items means that an error has occured
@@ -729,7 +762,7 @@ dict_t *read_ndx(const char *filename, system_t *system)
 
         // if three items are detected, try getting the group name
         else if (n_items == 3 && strcmp(split[0], "[") == 0) {
-            if (strcmp(split[2], "]\n") == 0) {
+            if (strcmp(split[2], "]") == 0) {
                 // if group name is detected, add the previous selection to the dictionary
                 if (current_selection != NULL) {
                     dict_set(ndx_selections, current_group, current_selection, sizeof(atom_selection_t) + alloc_atoms * sizeof(atom_t *));
