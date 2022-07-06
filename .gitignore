@@ -54,6 +54,7 @@ dkms.conf
 .vscode
 
 # Ignore compiled tests
-tests/*
-!tests/*.c
-!tests/*.h
+tests/tests
+
+# Ignore compiled example
+examples/example
