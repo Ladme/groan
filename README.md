@@ -93,7 +93,7 @@ Note that parentheses are allowed to be but do not have to be separated from the
 
 
 ## Acknowledgments
-The hroan library uses `xdrfile` library developed by David van der Speol and Erik Lindahl and published under the BSD License. Thank you!
+The groan library uses `xdrfile` library developed by David van der Speol and Erik Lindahl and published under the BSD License. Thank you!
 
 ## Disclaimer
 Please note that while groan library is an attempt at creating a fast and reasonably robust library for analyzing Gromacs simulations, it is mostly a tool for improving my rather pathetic C programming skills. In other words, even though I'm doing my best, there WILL be bugs and memory leaks.
