@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include "general_structs/vector.h"
 #include "general_structs/dyn_array.h"
+#include "general_structs/list.h"
 #include "general_structs/dict.h"
 
 /* Integer that fits any number that can be assigned to an atom or residue in a gro file. */
@@ -51,9 +52,9 @@ typedef struct atom_selection {
     atom_t *atoms[];
 } atom_selection_t;
 
-/*! \brief Macro shortcut for atom_selection_t.
+/*! @brief Macro shortcut for atom_selection_t.
  * 
- * \par Note on usage
+ * @paragraph Note on usage
  * To avoid confusion, this shortcut should never be used anywhere in the core groan library code.
  * It might however be useful in external or peripheral programs using groan library.
  */

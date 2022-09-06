@@ -191,6 +191,132 @@ void test_distance3D_naive(void)
     printf("OK\n");
 }
 
+void test_vector_artificial(void)
+{
+    printf("%-40s", "calc_vector (artificial) ");
+
+    // no minimum image convention
+    vec_t particle1 = {4., 4., 5.};
+    vec_t particle2 = {5., 5., 3.};
+    vec_t result = {0.0};
+
+    box_t box = {10.0, 10.0, 10.0, 
+                 0.0, 0.0, 0.0,
+                 0.0, 0.0, 0.0};
+    
+    calc_vector(result, particle1, particle2, box);
+
+    assert(closef(result[0], 1.0, 0.000001));
+    assert(closef(result[1], 1.0, 0.000001));
+    assert(closef(result[2],-2.0, 0.000001));
+
+    // image of the particle is closer in one dimensions
+    vec_t particle3 = {3., 0., 7.};
+    vec_t particle4 = {1., 2., 1.};
+
+    calc_vector(result, particle3, particle4, box);
+
+    assert(closef(result[0],-2.0, 0.000001));
+    assert(closef(result[1], 2.0, 0.000001));
+    assert(closef(result[2], 4.0, 0.000001));
+
+    // image of the particle is closer in two dimensions
+    vec_t particle5 = {1., 2., 5.};
+    vec_t particle6 = {9., 8., 6.};
+
+    calc_vector(result, particle5, particle6, box);
+
+    assert(closef(result[0],-2.0, 0.000001));
+    assert(closef(result[1],-4.0, 0.000001));
+    assert(closef(result[2], 1.0, 0.000001));
+
+    // image of the particle is closer in all three dimensions
+    vec_t particle7 = {8., 9., 2.};
+    vec_t particle8 = {1., 3., 9.};
+
+    calc_vector(result, particle7, particle8, box);
+
+    assert(closef(result[0], 3.0, 0.000001));
+    assert(closef(result[1], 4.0, 0.000001));
+    assert(closef(result[2],-3.0, 0.000001));
+
+    // particles are at the same position
+    vec_t particle9  = {0.0, 3.0, 10.0};
+    vec_t particle10 = {10.0, 3.0, 0.0};
+
+    calc_vector(result, particle9, particle10, box);
+
+    assert(closef(result[0], 0.0, 0.000001));
+    assert(closef(result[1], 0.0, 0.000001));
+    assert(closef(result[2], 0.0, 0.000001));
+
+    // real particle and its image are equidistant from the other particle
+    vec_t particle11 = {7., 4., 3.};
+    vec_t particle12 = {2., 5., 2.};
+
+    calc_vector(result, particle11, particle12, box);
+
+    //printf("%f %f %f\n", result[0], result[1], result[2]);
+
+    assert(closef(result[0], 5.0, 0.000001) || closef(result[0],-5.0, 0.000001));
+    assert(closef(result[1], 1.0, 0.000001));
+    assert(closef(result[2],-1.0, 0.000001));
+
+    printf("OK\n");
+}
+
+void test_vector_system(void)
+{
+    printf("%-40s", "calc_vector (system) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    // no effect of the PBC
+    select_t *particle1 = smart_select(all, "serial 43243", NULL);
+    select_t *particle2 = smart_select(all, "serial 43250", NULL);
+
+    atom_t *atom1 = particle1->atoms[0];
+    atom_t *atom2 = particle2->atoms[0];
+
+    //printf("atom1: %f %f %f\n", atom1->position[0], atom1->position[1], atom1->position[2]);
+    //printf("atom2: %f %f %f\n", atom2->position[0], atom2->position[1], atom2->position[2]);
+
+    free(particle1);
+    free(particle2);
+
+    vec_t result = {0.};
+
+    calc_vector(result, atom1->position, atom2->position, system->box);
+
+    assert(closef(result[0], atom2->position[0] - atom1->position[0], 0.000001));
+    assert(closef(result[1], atom2->position[1] - atom1->position[1], 0.000001));
+    assert(closef(result[2], atom2->position[2] - atom1->position[2], 0.000001));
+
+    // PBC do have an effect
+    select_t *particle3 = smart_select(all, "serial 48263", NULL);
+
+    atom_t *atom3 = particle3->atoms[0];
+
+    //printf("atom3: %f %f %f\n", atom3->position[0], atom3->position[1], atom3->position[2]);
+    //printf("box: %f %f %f\n", system->box[0], system->box[1], system->box[2]);
+
+    free(particle3);
+
+    calc_vector(result, atom1->position, atom3->position, system->box);
+
+    //printf("result: %f %f %f\n", result[0], result[1], result[2]);
+
+    assert(closef(result[0], 2.58525, 0.000001));
+    assert(closef(result[1],-0.289, 0.000001));
+    assert(closef(result[2], 2.169119, 0.000001));
+
+    free(all);
+    free(system);
+
+    printf("OK\n");
+}
+
 void test_selection_translate(void)
 {
     printf("%-40s", "selection_translate ");
@@ -431,6 +557,9 @@ void test_analysis_tools(void)
     test_distance2D_naive();
     test_distance3D();
     test_distance3D_naive();
+
+    test_vector_artificial();
+    test_vector_system();
 
     test_selection_translate();
 

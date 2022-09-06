@@ -103,6 +103,17 @@ float distance3D_naive(const vec_t particle1, const vec_t particle2)
     return sqrtf( xd*xd + yd*yd + zd*zd );
 }
 
+void calc_vector(vec_t result, const vec_t particle1, const vec_t particle2, const box_t box)
+{
+    register float boxx2 = box[0] / 2.;
+    register float boxy2 = box[1] / 2.;
+    register float boxz2 = box[2] / 2.;
+
+    result[0] = pymod(particle2[0] - particle1[0] + boxx2, box[0]) - boxx2;
+    result[1] = pymod(particle2[1] - particle1[1] + boxy2, box[1]) - boxy2;
+    result[2] = pymod(particle2[2] - particle1[2] + boxz2, box[2]) - boxz2;
+}
+
 int center_of_geometry(const atom_selection_t *selection, vec_t center, box_t box)
 {
     if (selection == NULL || selection->n_atoms == 0) return 1;

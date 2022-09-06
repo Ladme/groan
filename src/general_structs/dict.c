@@ -7,12 +7,12 @@
 
 /* CONSTANTS */
 
-/*! \brief Hashing constant for hash_key function */
+/*! @brief Hashing constant for hash_key function */
 static const unsigned long FNV_OFFSET = 14695981039346656037UL;
-/*! \brief Hashing constant for hash_key function */
+/*! @brief Hashing constant for hash_key function */
 static const unsigned long FNV_PRIME = 1099511628211UL;
 
-/*! \brief The number of key->item pairs for which memory is initially allocated. */
+/*! @brief The number of key->item pairs for which memory is initially allocated. */
 static const size_t DICT_BLOCK = 64;
 
 /******************************************************/
@@ -20,7 +20,7 @@ static const size_t DICT_BLOCK = 64;
 /* STATIC FUNCTIONS */
 
 
-/*! \brief Hashing function for string. */
+/*! @brief Hashing function for string. */
 static uint64_t hash_key(const char *key)
 {
     uint64_t hash = FNV_OFFSET;
@@ -33,7 +33,7 @@ static uint64_t hash_key(const char *key)
 }
 
 
-/*! \brief Allocates memory for dict entry and assigns key and value. Returns 0 if successful, else returns 1. */
+/*! @brief Allocates memory for dict entry and assigns key and value. Returns 0 if successful, else returns 1. */
 static int dict_entry_create(dict_entry_t *entry, const char *key, const void *value, const unsigned valsize)
 {
     entry->key = calloc(1, strlen(key) + 1);
@@ -53,7 +53,7 @@ static int dict_entry_create(dict_entry_t *entry, const char *key, const void *v
 }
 
 
-/*! \brief Deallocates memory for a dictionary entry. */
+/*! @brief Deallocates memory for a dictionary entry. */
 static void dict_entry_destroy(dict_entry_t *entry)
 {
     free(entry->key);
@@ -61,15 +61,15 @@ static void dict_entry_destroy(dict_entry_t *entry)
 }
 
 
-/*! \brief Loops through an array of entries searching for suitable position.
+/*! @brief Loops through an array of entries searching for suitable position.
  * 
- * \par Suitable position
+ * @par Suitable position
  * Suitable position is either an empty position or position containing the same key as 'key'.
  * 
- * \par No suitable position
+ * @par No suitable position
  * If there is no suitable position in the array, this function loops indefinitely.
  * 
- * \return Index of a suitable position.
+ * @return Index of a suitable position.
  */
 static size_t dict_find_suitable(
         const dict_entry_t *entries, 
@@ -175,7 +175,7 @@ int dict_set(dict_t *dict, const char *key, const void *value, const unsigned va
     return 0;
 }
 
-void *dict_get(dict_t *dict, const char *key)
+void *dict_get(const dict_t *dict, const char *key)
 {
     size_t index = hash_key(key) % dict->allocated;
 
@@ -193,4 +193,21 @@ void *dict_get(dict_t *dict, const char *key)
     // (this of course actually returns void pointer to the value)
     // this returns NULL, if no corresponding entry has been found
     return entry->value;
+}
+
+size_t dict_keys(dict_t *dict, char ***keys)
+{
+    // allocate memory for keys
+    // the number of keys cannot be higher than half of the allocated positions of dict entries
+    (*keys) = calloc(dict->allocated / 2, sizeof(char *));
+
+    size_t key_iterator = 0;
+    for (size_t i = 0; i < dict->allocated; ++i) {
+        if (dict->entries[i].key == NULL) continue;
+
+        (*keys)[key_iterator] = dict->entries[i].key; 
+        key_iterator++;
+    }
+
+    return key_iterator;
 }

@@ -4,11 +4,10 @@
 #include "selection.h"
 #include "analysis_tools.h"
 
+/*! @brief Maximal number of query segments for smart_select(). These are two query segments: >resname POPC< && >name PO4< */
+static const size_t MAX_QUERY_SEGMENTS = 50;
 
-/*! \brief Maximal length of the match string for matching residue/atom names or numbers (including \0). */
-static const size_t MAX_MATCH_STRING_LEN = 100;
-
-/*! \brief Initial number of atom indices in selection array. See function select_atoms(). */
+/*! @brief Initial number of atom indices in selection array. See function select_atoms(). */
 static const size_t INITIAL_SELECTION_SIZE = 64;
 
 /* Simple function for qsort comparison of atom numbers */
@@ -37,7 +36,7 @@ int strsplit(char *string, char ***array, const char *delim)
     if (*array == NULL) return 0;
 
     // initialize strtok
-    char *word;
+    char *word = NULL;
     if ((word = strtok(string, delim)) == NULL) {
         free(*array);
         *array = NULL;
@@ -68,10 +67,48 @@ int strsplit(char *string, char ***array, const char *delim)
     return items;
 }
 
+void strstrip(char *string)
+{
+    char *p = string;
+    int l = strlen(p);
+
+    if (l == 0) return;
+
+    while(isspace(p[l - 1])) p[--l] = 0;
+    while(* p && isspace(* p)) ++p, --l;
+
+    memmove(string, p, l + 1);    
+}
+
+void strremwhite(char *string)
+{
+    char *d = string;
+
+    do {
+        while (isspace(*d)) {
+            ++d;
+        }
+    *string = *d;
+    string++;
+    d++;
+    } while (*string);
+}
+
 int match_residue_name(const atom_t *atom, const char *string)
 {
     if (string == NULL) return 1;
     return !strcmp(atom->residue_name, string);
+}
+
+int match_residue_num(const atom_t *atom, const char *string)
+{
+    if (string == NULL) return 1;
+    groint_t residue_number = 0;
+    if (sscanf(string, "%u", &residue_number) != 1) {
+        return 0;
+    }
+
+    return (atom->residue_number == residue_number);
 }
 
 int match_atom_name(const atom_t *atom, const char *string) 
@@ -137,6 +174,16 @@ void selection_add_atom(
     (*output_atoms)->n_atoms++;
 }
 
+void selection_add(
+        atom_selection_t **output_atoms, 
+        size_t *allocated_atoms, 
+        atom_selection_t *atoms_to_add)
+{
+    for (size_t i = 0; i < atoms_to_add->n_atoms; ++i) {
+        selection_add_atom(output_atoms, allocated_atoms, atoms_to_add->atoms[i]);
+    }
+}
+
 atom_selection_t *select_atoms(
         const atom_selection_t *input_atoms,
         const char *match_string,
@@ -149,10 +196,8 @@ atom_selection_t *select_atoms(
     if (input_atoms == NULL || input_atoms->n_atoms == 0) return output_atoms;
 
     // split match_string into individual elements
-    // copy the match_string into new string that can be modified
-    char *to_match = malloc(MAX_MATCH_STRING_LEN);
-    strncpy(to_match, match_string, MAX_MATCH_STRING_LEN - 1);
-    to_match[MAX_MATCH_STRING_LEN - 1] = '\0';
+    char *to_match = calloc(strlen(match_string) + 1, 1);
+    strcpy(to_match, match_string);
     
     // next do the actual splitting
     char **elements = NULL;
@@ -537,6 +582,107 @@ int selection_isin(atom_selection_t *selection, atom_t *atom)
     return 0;
 }
 
+size_t selection_getnres(atom_selection_t *selection)
+{
+    size_t total_residues = 0;
+    // we allocate enough memory to hold N numbers where N is the number of atoms in selection
+    groint_t *residue_numbers = calloc(selection->n_atoms, sizeof(groint_t));
+
+    // loop through the selection and get residue number for each atom
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        int found = 0;
+        groint_t resid = selection->atoms[i]->residue_number;
+        // search for the residue number in the array of residue numbers
+        for (size_t j = 0; j < total_residues; ++j) {
+            if (resid == residue_numbers[j]) {
+                found = 1;
+                break;
+            }
+        }
+
+        // if the residue is unique, add the residue number into the array and increase the counter
+        if (!found) {
+            residue_numbers[total_residues] = resid;
+            total_residues++;
+        }
+    }
+
+    free(residue_numbers);
+
+    return total_residues;
+}
+
+
+list_t *selection_getresnames(atom_selection_t *selection)
+{
+    list_t *resnames = list_create();
+    if (resnames == NULL) return NULL;
+
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        char *resname = selection->atoms[i]->residue_name;
+        // if the residue name does not exist in the list
+        if (list_index(resnames, resname) < 0) {
+            list_append(&resnames, resname);
+        }
+    }
+    
+    return resnames;
+}
+
+size_t selection_splitbyres(atom_selection_t *selection, atom_selection_t ***split)
+{
+    // if selection does not exist or is empty, do not allocate any memory for split and return 0
+    if (selection == NULL || selection->n_atoms <= 0) return 0;
+
+    // allocate initial memory for the split array
+    size_t alloc_residues = 8;
+    size_t added_residues = 0;
+    *split = calloc(alloc_residues, sizeof(atom_selection_t *));
+
+    short *positions_assigned = calloc(selection->n_atoms, sizeof(short));
+
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        // if this atom has already been assigned, skip it
+        if (positions_assigned[i]) continue;
+        atom_t *atom1 = selection->atoms[i];
+
+        // reallocate memory for the split array, if needed
+        if (added_residues >= alloc_residues) {
+            alloc_residues *= 2;
+            *split = realloc(*split, alloc_residues * sizeof(atom_selection_t *));
+        }
+
+        // allocate memory for the new atom_selection_t structure in the split array
+        size_t alloc_atoms = 64;
+        (*split)[added_residues] = selection_create(alloc_atoms);
+
+        // add atom1 to the list of assigned positions
+        positions_assigned[i] = 1;
+        // and to the atom_selection
+        selection_add_atom(&((*split)[added_residues]), &alloc_atoms, atom1);
+        
+        for (size_t j = i + 1; j < selection->n_atoms; ++j) {
+            // if this atom has already been assigned, skip it
+            if (positions_assigned[j]) continue;
+            atom_t *atom2 = selection->atoms[j];
+
+            if (atom1->residue_number == atom2->residue_number) {
+                // add atom2 to the list of assigned positions
+                positions_assigned[j] = 1;
+                // and to the atom_selection
+                selection_add_atom(&((*split)[added_residues]), &alloc_atoms, atom2);
+            }
+        }
+
+        // increment the residue counter
+        ++added_residues;
+    }
+
+    free(positions_assigned);
+
+    return added_residues; 
+}
+
 system_t *selection_to_system(
         const atom_selection_t *selection, 
         const box_t box, 
@@ -674,6 +820,368 @@ atom_selection_t *select_geometry_d(
     return output;
 }
 
+/*! @brief Returns selection of atoms from 'all' which are NOT part of 'selection'. */
+static atom_selection_t *selection_invert(const atom_selection_t *all, const atom_selection_t *selection)
+{
+    atom_selection_t *result = selection_copy(all);
+
+    selection_remove(result, selection);
+
+    return result;
+}
+
+/*! @brief Parses lexeme translating it to atom selection structure pointer to which is returned. */
+static atom_selection_t *parse_lexeme(atom_selection_t *selection, char *lexeme, dict_t *ndx_groups)
+{
+    // check whether the lexeme contains 'not' or '!'
+    int not = 0;
+    size_t skip = 0;
+    if (strlen(lexeme) >= 1 && memcmp(lexeme, "!", 1) == 0) {
+        not = 1;
+        skip = 2;
+    } else if (strlen(lexeme) >= 3 && memcmp(lexeme, "not", 3) == 0) {
+        not = 1;
+        skip = 4;
+    }
+    
+    atom_selection_t *result = NULL;
+    // select all atoms from the selection
+    if (strlen(lexeme + skip) >= 3 && memcmp(lexeme + skip, "all", 3) == 0) {
+        result = selection_copy(selection);
+    // select atoms based on residue names
+    } else if (strlen(lexeme + skip) >= 8 && memcmp(lexeme + skip, "resname", 7) == 0) {
+        result = select_atoms(selection, lexeme + skip + 7, &match_residue_name);
+    // select atoms based on residue numbers
+    } else if (strlen(lexeme + skip) >= 6 && memcmp(lexeme + skip, "resid", 5) == 0) {
+        result = select_atoms(selection, lexeme + skip + 5, &match_residue_num);
+    // select atoms based on atom names
+    } else if (strlen(lexeme + skip) >= 5 && memcmp(lexeme + skip, "name", 4) == 0) {
+        result = select_atoms(selection, lexeme + skip + 4, &match_atom_name);
+    // select atoms based on atom numbers
+    } else if (strlen(lexeme + skip) >= 7 && memcmp(lexeme + skip, "serial", 6) == 0) {
+        result = select_atoms(selection, lexeme + skip + 6, &match_atom_num);
+    // select atoms based on ndx groups
+    } else if (ndx_groups != NULL) {
+        // we have to replace the trailing space that is added during lexeme formation
+        lexeme[strlen(lexeme) - 1] = 0;
+        atom_selection_t *original = (atom_selection_t *) dict_get(ndx_groups, lexeme + skip);
+        if (original == NULL) return NULL;
+
+        // we have to copy the selection so we can then free it without disrupting the dictionary
+        result = selection_copy(original);
+    }
+
+    // invert the selection, if 'not' or '!' is in the lexeme
+    if (not && result != NULL) {
+        atom_selection_t *result_inverted = selection_invert(selection, result);
+        free(result);
+        return result_inverted;
+    }
+    
+    return result;
+}
+
+/*! @brief Expands 'a to b' or 'a - b' macro into a sequence that can be understood by the parser. 
+ * 
+ * @paragraph Memory Allocation
+ * Allocates enough memory to hold the expanded sequence.
+ * 
+ * @return Zero in case of successful replacement. Else non-zero.
+ */
+static int expand_to(char **new_string, const char *original_string)
+{
+    // check whether there is any '-' or 'to' in the original string
+    if (strchr(original_string, '-') == NULL && strstr(original_string, "to") == NULL) {
+        *new_string = calloc(strlen(original_string) + 1, 1);
+        strcpy(*new_string, original_string);
+        return 0;
+    }
+
+    // split the original string
+    char **split = NULL;
+    char *string_to_split = calloc(strlen(original_string) + 1, 1);
+    strcpy(string_to_split, original_string);
+    size_t n_words = strsplit(string_to_split, &split, " \n\t");
+
+    size_t string_allocated = 64;
+    *new_string = calloc(string_allocated, 1);
+    size_t string_len = 0;
+
+    // loop through the individual words and detect keywords
+    for (size_t i = 0; i < n_words; ++i) {
+        // sanity check: -/to cannot be at the start or the end of the query
+        if (strcmp(split[i], "-") == 0 || strcmp(split[i], "to") == 0) {
+            
+            if (i == 0 || i == n_words - 1) {
+                free(string_to_split);
+                free(split);
+                return 1;
+            }
+
+            // try reading the starting and ending value of the loop
+            int start = 0;
+            int end = 0;
+            if (sscanf(split[i - 1], "%d", &start) != 1 || sscanf(split[i + 1], "%d", &end) != 1) {
+                free(string_to_split);
+                free(split);
+                return 1;
+            }
+
+            // loop must start at the lower value
+            if (start > end) {
+                free(string_to_split);
+                free(split);
+                return 1;
+            }
+
+            // we start from 'start + 1' and we end at 'end - 1' because the first and last number are included by the block in 'else'
+            for (int j = start + 1; j < end; ++j) {
+                char number[50] = "";
+                sprintf(number, "%d", j);
+                if (string_len + strlen(number) + 2 >= string_allocated) {
+                    while (string_len + strlen(number) + 2 >= string_allocated) string_allocated *= 2;
+                    *new_string = realloc(*new_string, string_allocated);
+                }
+
+                // add new number to the string
+                strcpy( (*new_string) + string_len, number);
+                string_len += strlen(number);
+                // we have to add space at the end of the string
+                (*new_string)[string_len] = ' ';
+                (*new_string)[string_len + 1] = 0;
+                ++string_len;
+            }
+
+        } else {
+            if (string_len + strlen(split[i]) + 2 >= string_allocated) {
+                while (string_len + strlen(split[i]) + 2 >= string_allocated) string_allocated *= 2;
+                *new_string = realloc(*new_string, string_allocated);
+            }
+            
+            strcpy( (*new_string) + string_len, split[i]);
+            string_len += strlen(split[i]);
+            // we have to add space to the end of the string
+            (*new_string)[string_len] = ' ';
+            (*new_string)[string_len + 1] = 0;
+            ++string_len;
+
+        }
+    }
+
+    free(string_to_split);
+    free(split);
+
+    //printf("TO expanded: %s, length expected: %d, length real: %d, allocated: %d\n", *new_string, string_len, strlen(*new_string), string_allocated);
+    return 0;
+}
+
+static atom_selection_t *parse_query(atom_selection_t *selection, char *query, dict_t *ndx_groups)
+{
+    size_t query_len = strlen(query);
+    // split the expanded query into individual lexemes
+    char **split = NULL;
+    size_t n_words = strsplit(query, &split, " \n\t");
+    //printf("Split query into %d words\n", n_words);
+
+    // prepare an array with token definitions
+    atom_selection_t *tokens[MAX_QUERY_SEGMENTS];
+
+    // loop through the lexemes, translating them to atom selections
+    char *lexeme = calloc(2 * query_len + 1, 1);
+    char *operators[MAX_QUERY_SEGMENTS];
+    size_t counter = 0;
+    size_t n_tokens = 0;
+    size_t n_operators = 0;
+    for (size_t i = 0; i < n_words; ++i) {
+        // if parenthesis is detected
+        if (strchr(split[i], '(')) {
+            //printf("Detected an opening parenthesis.\n");
+            char *block = calloc(2 * query_len + 1, 1);
+            size_t block_len = 0;
+            size_t par = 0;
+            size_t j = i;
+            // loop through all the words until we find a matching ')'
+            for (; j < n_words; ++j) {
+                //printf("Adding %s to block.\n", split[j]);
+
+                // count the number of parenthesis in the word
+                for (size_t k = 0; split[j][k] != 0; ++k) {
+                    if (split[j][k] == '(') ++par;
+                    else if (split[j][k] == ')') --par;
+                }
+                
+                // copy the words into a new query 'block'
+                size_t add_block_len = 0;
+                if (j == i) {
+                    if (par == 0) {
+                        // remove the opening and the closing parenthesis
+                        split[j][strlen(split[j])] = 0;
+                        strcpy(block, split[j] + 1);
+                        add_block_len = strlen(split[j]) - 2;
+                    } else {
+                        // remove the initial parenthesis from the first word
+                        strcpy(block + block_len, split[j] + 1);
+                        add_block_len = strlen(split[j]) - 1;
+                    }
+                } else if (par == 0) {
+                    if (strlen(split[j]) != 1) {
+                        strcpy(block + block_len, split[j]);
+                        // remove the ending parenthesis from the last word
+                        add_block_len = strlen(split[j]) - 1;
+                    }
+                } else {
+                    // copy the entire word
+                    strcpy(block + block_len, split[j]);
+                    add_block_len = strlen(split[j]);
+                }
+                
+                block_len += add_block_len;
+                if (add_block_len > 0) {
+                    block[block_len] = ' ';
+                    block[block_len + 1] = 0;
+                    ++block_len;
+                }
+                
+                //printf("Current block: %s\n", block);
+
+                if (par == 0) break;
+            }
+
+            // parse the block as a new query and save the output into a list of tokens
+            atom_selection_t *parsed_block = parse_query(selection, block, ndx_groups);
+            if (parsed_block == NULL) {
+                //fprintf(stderr, "Could not parse block %s\n", block);
+                free(split);
+                free(block);
+                free(lexeme);
+                for (size_t i = 0; i < n_tokens; ++i) free(tokens[i]);
+                return NULL;
+            }
+
+            // check whether there is 'not' operator in front of the block
+            if (!strcmp(lexeme, "! ") || !strcmp(lexeme, "not ")) {
+                //printf("Detected NOT operator.\n");
+                tokens[n_tokens] = selection_invert(selection, parsed_block);
+                free(parsed_block);
+                memset(lexeme, 0, strlen(lexeme));
+                counter = 0;
+            } else {
+                tokens[n_tokens] = parsed_block;
+            }
+
+            // if there are any characters in front of a parenthesis (other than '!' or 'not'), raise a syntax error
+            if (strlen(lexeme) != 0) {
+                ++n_tokens;
+                free(split);
+                free(block);
+                free(lexeme);
+                for (size_t i = 0; i < n_tokens; ++i) free(tokens[i]);
+                return NULL;
+            }
+            
+            ++n_tokens;
+            // continue parsing the input at the end of the block
+            i = j;
+
+            free(block);
+        } 
+
+        else if ( ( strlen(split[i]) == 2 && (strcmp(split[i], "&&") == 0 || strcmp(split[i], "||") == 0 || strcmp(split[i], "or") == 0)) ||
+             ( strlen(split[i]) == 3 && strcmp(split[i], "and") == 0) ) {
+
+            // add the operator to the list of operators
+            //printf("Adding operator %s\n", split[i]);
+            operators[n_operators] = split[i];
+            ++n_operators;
+
+            if (strlen(lexeme) == 0) continue;
+
+            //printf("Parsing lexeme %s\n", lexeme);
+
+            // parse the lexeme
+            atom_selection_t *parsed = parse_lexeme(selection, lexeme, ndx_groups);
+            if (parsed == NULL) {
+                //fprintf(stderr, "Could not parse lexeme %s\n", lexeme);
+                free(split);
+                free(lexeme);
+                for (size_t i = 0; i < n_tokens; ++i) free(tokens[i]);
+                return NULL;
+            }
+
+            tokens[n_tokens] = parsed;
+            ++n_tokens;
+            memset(lexeme, 0, strlen(lexeme));
+            counter = 0;
+        } else {
+            //printf("Adding %s to lexeme\n", split[i]);
+            strcpy(lexeme + counter, split[i]);
+            counter += strlen(split[i]);
+            lexeme[counter] = ' ';
+            lexeme[counter + 1] = 0;
+            counter += 1;
+            //printf("Added %s to lexeme\n", split[i]);
+
+            // if this is the last word, parse the current lexeme
+            if (i == n_words - 1) {
+
+                //printf("Parsing lexeme %s\n", lexeme);
+                
+                atom_selection_t *parsed = parse_lexeme(selection, lexeme, ndx_groups);
+                if (parsed == NULL) {
+                    //fprintf(stderr, "Could not parse lexeme %s\n", lexeme);
+                    free(split);
+                    free(lexeme);
+                    for (size_t i = 0; i < n_tokens; ++i) free(tokens[i]);
+                    return NULL;
+                }
+
+                tokens[n_tokens] = parsed;
+                ++n_tokens;
+            }
+        }
+    }
+
+    //printf("Detected %lu query segments that were translated to tokens.\n", n_tokens);
+
+    // check that the number of operators corresponds to the number of tokens
+    if (n_tokens == 0 || n_operators + 1 != n_tokens) {
+        free(lexeme);
+        free(split);
+        for (size_t i = 0; i < n_tokens; ++i) free(tokens[i]);
+        return NULL;
+    }
+
+    // if there is only one token and no operators, return the first token
+    if (n_tokens == 1) {
+        free(lexeme);
+        free(split);
+        return tokens[0];
+    }
+
+    // combine atom selections
+    atom_selection_t *final = tokens[0];
+    for (size_t i = 1; i < n_tokens; ++i) {
+        // AND operation
+        if (strcmp(operators[i - 1], "&&") == 0 || strcmp(operators[i - 1], "and") == 0) {
+            //printf("Performing AND operation\n");
+            final = selection_intersect_d(final, tokens[i]);
+        // OR operation
+        } else if (strcmp(operators[i - 1], "||") == 0 || strcmp(operators[i - 1], "or") == 0) {
+            //printf("Performing OR operation\n");
+            // must be unique cat as we do not want duplicate atoms in the final selection!
+            final = selection_cat_unique_d(final, tokens[i]);
+        }
+    }
+
+    free(lexeme);
+    free(split);
+    
+
+    return final;
+
+
+}
+
 atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups)
 {
     // check that the query is valid
@@ -682,35 +1190,33 @@ atom_selection_t *smart_select(atom_selection_t *selection, const char *query, d
         return copy;
     };
 
-    // check the query length
+    // check that the query ends with '\0'
     char *pos = strchr(query, 0);
-    if (pos == NULL || strlen(query) > 99) {
-        return NULL;
-    }
+    if (pos == NULL) return NULL;
 
     // check that the selection is valid
     if (selection == NULL) return NULL;
-    
-    // select atoms based on residues
-    if (strlen(query) >= 8 && memcmp(query, "resname", 7) == 0) {
-        return select_atoms(selection, query + 7, &match_residue_name);
-    // select atoms based on residues
-    } else if (strlen(query) >= 5 && memcmp(query, "name", 4) == 0) {
-        return select_atoms(selection, query + 4, &match_atom_name);
-    // select atoms based on atom numbers
-    } else if (strlen(query) >= 7 && memcmp(query, "serial", 6) == 0) {
-        return select_atoms(selection, query + 6, &match_atom_num);
-    // select atoms based on ndx groups
-    } else if (ndx_groups != NULL) {
-        // we have to copy the selection so we can then free it without disrupting the dictionary
-        atom_selection_t *original = (atom_selection_t *) dict_get(ndx_groups, query);
-        if (original == NULL) return NULL;
-        
-        atom_selection_t *copy = selection_copy(original);
-        return copy;
+
+    // check that the number of '(' and ')' match each other
+    int par_open = 0;
+    int par_close = 0;
+    for (size_t i = 0; query[i] != 0; ++i) {
+        if (query[i] == '(') ++par_open;
+        else if (query[i] == ')') ++par_close;
+    }
+    if (par_open != par_close) return NULL;
+
+    // expand the 'to' macro
+    char *query_expanded = NULL;
+    if (expand_to(&query_expanded, query) != 0) {
+        free(query_expanded);
+        return NULL;
     }
 
-    return NULL;
+    atom_selection_t *final = parse_query(selection, query_expanded, ndx_groups);
+    free(query_expanded);
+
+    return final;
 }
 
 

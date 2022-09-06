@@ -36,6 +36,61 @@ static void test_strsplit_spacetab(void)
     printf("OK\n");
 }
 
+static void test_strstrip(void)
+{
+    printf("%-40s", "strstrip ");
+
+    char string[1024] = "               Str\ning to st\nrip.         \n";
+    strstrip(string);
+    assert(!strcmp(string, "Str\ning to st\nrip."));
+
+    printf("OK\n");
+}
+
+static void test_strstrip_zero(void)
+{
+    printf("%-40s", "strstrip (zero) ");
+
+    char string[1024] = "";
+    strstrip(string);
+    assert(!strcmp(string, ""));
+
+    printf("OK\n");
+}
+
+static void test_strstrip_white(void)
+{
+    printf("%-40s", "strstrip (whiteonly) ");
+
+    char string[1024] = "    \n             \n  \n\n\n          ";
+    strstrip(string);
+    assert(!strcmp(string, ""));
+
+    printf("OK\n");
+}
+
+static void test_strremwhite(void)
+{
+    printf("%-40s", "strremwhite ");
+
+    char string[1024] = "bla - g . \t haha\n xx";
+    strremwhite(string);
+    assert(!strcmp(string, "bla-g.hahaxx"));
+
+    printf("OK\n");
+}
+
+static void test_strremwhite_white(void)
+{
+    printf("%-40s", "strremwhite (whiteonly)");
+
+    char string[1024] = "   \t\n\n ";
+    strremwhite(string);
+    assert(!strcmp(string, ""));
+
+    printf("OK\n");
+}
+
 static void test_load_gro(void)
 {
     printf("%-40s", "load_gro ");
@@ -104,6 +159,24 @@ static void test_match_residue_name(void)
     for (unsigned short i = 0; i < 5; ++i) {
         assert(match_residue_name(&system->atoms[atom_ids[i]], residue_names[i]));
         assert(match_residue_name(&system->atoms[atom_ids[i]], NULL));
+    }
+
+    free(system);
+    printf("OK\n");
+}
+
+static void test_match_residue_num(void)
+{
+    printf("%-40s", "match_residue_num ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+
+    int atom_ids[5] = {12, 5061, 11349, 32542, 48191};
+    char residue_numbers[5][5] = {"1", "59", "110", "3898", "9115"};
+
+    for (unsigned short i = 0; i < 5; ++i) {
+        assert(match_residue_num(&system->atoms[atom_ids[i]], residue_numbers[i]));
+        assert(match_residue_num(&system->atoms[atom_ids[i]], NULL));
     }
 
     free(system);
@@ -236,6 +309,33 @@ static void test_selection_add_atom(void)
     assert(allocated > 1);
 
     free(selection);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_selection_add(void)
+{
+    printf("%-40s", "selection_add ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    size_t allocated = 1;
+    select_t *selection1 = selection_create(allocated);
+
+    select_t *selection2 = select_atoms(all, "NA", &match_residue_name);
+
+    selection_add(&selection1, &allocated, selection2);
+    selection_add(&selection1, &allocated, selection2);
+
+    assert(selection1->n_atoms == 134);
+    for (size_t i = 0; i < selection1->n_atoms; ++i) {
+        assert(!strcmp(selection1->atoms[i]->residue_name, "NA"));
+    }
+
+    free(all);
+    free(selection1);
+    free(selection2);
     free(system);
     printf("OK\n");
 }
@@ -1042,6 +1142,149 @@ static void test_selection_isin(void)
     printf("OK\n");
 }
 
+static void test_selection_getnres(void)
+{
+    printf("%-40s", "selection_getnres ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    assert(selection_getnres(all) == 9207);
+
+    select_t *membrane = select_atoms(all, "POPE POPG", &match_residue_name);
+    assert(selection_getnres(membrane) == 168);
+
+    free(all);
+    free(membrane);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_selection_getresnames(void)
+{
+    printf("%-40s", "selection_getresnames ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    list_t *all_resnames = selection_getresnames(all);
+
+    assert(all_resnames->n_items == 8);
+    assert(list_index(all_resnames, "LEU") >= 0);
+    assert(list_index(all_resnames, "SER") >= 0);
+    assert(list_index(all_resnames, "NHE") >= 0);
+    assert(list_index(all_resnames, "POPE") >= 0);
+    assert(list_index(all_resnames, "POPG") >= 0);
+    assert(list_index(all_resnames, "SOL") >= 0);
+    assert(list_index(all_resnames, "NA") >= 0);
+    assert(list_index(all_resnames, "CL") >= 0);
+    assert(list_index(all_resnames, "NAH") < 0);
+    assert(list_index(all_resnames, "NONEXISTENT") < 0);
+
+    list_destroy(all_resnames);
+    free(all);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_selection_splitbyres(void)
+{
+    printf("%-40s", "selection_splitbyres ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    select_t **array = NULL;
+    size_t n_residues = selection_splitbyres(all, &array);
+
+    assert(n_residues == selection_getnres(all));
+
+    char serine_atoms[11][4] = {"N", "H", "CA", "HA", "CB", "HB1", "HB2", "OG", "HG", "C", "O"};
+    assert(array[1]->n_atoms == 11);
+    for (size_t i = 0; i < array[1]->n_atoms; ++i) {
+        assert(strcmp(serine_atoms[i], array[1]->atoms[i]->atom_name) == 0);
+    }
+
+    assert(strcmp(array[2]->atoms[0]->atom_name, "N") == 0);
+
+    assert(strcmp(array[67]->atoms[0]->residue_name, "POPE") == 0);
+    assert(array[67]->n_atoms == 125);
+
+    assert(array[9100]->n_atoms == 3);
+    assert(array[9206]->n_atoms == 1);
+    assert(array[9206]->atoms[0]->atom_number == 48284);
+    
+
+    for (size_t i = 0; i < n_residues; ++i) {
+        free(array[i]);
+    }
+
+    free(array);
+    free(all);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_selection_splitbyres_broken(void)
+{
+    printf("%-40s", "selection_splitbyres (broken) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    select_t *selection1 = select_atoms(all, "HD21 HD22 HD23", &match_atom_name);
+    select_t *selection2 = select_atoms(all, "CD2 C", &match_atom_name);
+    select_t *selection3 = select_atoms_d(all, "N", &match_atom_name);
+
+    select_t *selection12 = selection_cat_d(selection1, selection2);
+    select_t *selection123 = selection_cat_d(selection12, selection3);
+
+    select_t **array = NULL;
+    size_t n_residues = selection_splitbyres(selection123, &array);
+
+    assert(n_residues == selection_getnres(selection123));
+
+    assert(array[0]->n_atoms == 6);
+    assert(array[11]->n_atoms == 7);
+
+    assert(strcmp(array[12]->atoms[0]->atom_name, "C") == 0);
+    assert(strcmp(array[12]->atoms[1]->atom_name, "N") == 0);
+
+    /*for (size_t i = 0; i < n_residues; ++i) {
+        write_gro(stdout, array[i], system->box, no_velocities, "something");
+    }*/
+    
+    for (size_t i = 0; i < n_residues; ++i) {
+        free(array[i]);
+    }
+
+    free(array);
+    free(selection123);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_selection_splitbyres_empty(void)
+{
+    printf("%-40s", "selection_splitbyres (empty) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    select_t *selection = select_atoms_d(all, "PO4", &match_atom_name);
+
+    select_t **array = NULL;
+    
+    size_t n_residues = selection_splitbyres(selection, &array);
+
+    assert(array == NULL);
+    assert(n_residues == 0);
+
+    free(selection);
+    free(system);
+    printf("OK\n");
+}
+
 static void test_selection_to_system(void)
 {
     printf("%-40s", "selection_to_system ");
@@ -1356,24 +1599,83 @@ static void test_smart_select(void)
     select_t *pope1 = smart_select(all, "resname POPE", ndx_groups);
     select_t *pope2 = smart_select(all, "resnamePOPE", NULL);
     select_t *pope3 = smart_select(all, "resname      POPE", ndx_groups);
+    select_t *not_pope = smart_select(all, "not resname POPE", ndx_groups);
     assert(pope1 != NULL);
     assert(pope2 != NULL);
     assert(pope3 != NULL);
+    assert(not_pope != NULL);
     assert(selection_compare_strict(manual_pope, pope1));
     assert(selection_compare_strict(manual_pope, pope2));
     assert(selection_compare_strict(manual_pope, pope3));
+    assert(not_pope->n_atoms == all->n_atoms - pope1->n_atoms);
+    for (size_t i = 0; i < not_pope->n_atoms; ++i) {
+        assert(strcmp(not_pope->atoms[i]->residue_name, "POPE"));
+    }
+
     free(pope1);
     free(pope2);
     free(pope3);
     free(manual_pope);
+    free(not_pope);
+
+    // residue number selection
+    select_t *manual_residues = select_atoms(all, "8874 7734 4 5 6 9207 1", &match_residue_num);
+    select_t *smart1 = smart_select(all, "resid 8874 7734 4 5 6 9207 1", NULL);
+    select_t *smart2 = smart_select(all, "resid8874 7734 4 5 6 9207 1", NULL);
+    select_t *not_resid = smart_select(all, "! resid 8874 7734 4 5 6 9207 1", NULL);
+    assert(smart1 != NULL);
+    assert(smart2 != NULL);
+    assert(not_resid != NULL);
+    assert(selection_compare_strict(manual_residues, smart1));
+    assert(selection_compare_strict(manual_residues, smart2));
+    assert(not_resid->n_atoms == all->n_atoms - smart1->n_atoms);
+    for (size_t i = 0; i < not_resid->n_atoms; ++i) {
+        assert(not_resid->atoms[i]->residue_number != 8874);
+        assert(not_resid->atoms[i]->residue_number != 7734);
+        assert(not_resid->atoms[i]->residue_number != 4);
+        assert(not_resid->atoms[i]->residue_number != 5);
+        assert(not_resid->atoms[i]->residue_number != 9207);
+        assert(not_resid->atoms[i]->residue_number != 1);
+    }
+    free(manual_residues);
+    free(smart1);
+    free(smart2);
+    free(not_resid);
 
     // atom name selection
     select_t *manual_hydrogens = select_atoms(all, "H1 H2 H3 HA HB1 HB2 HG HD11 HD12 HD13 HD21 HD22 HD23 H", &match_atom_name);
     select_t *hydrogens = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
+    select_t *not_hydrogens = smart_select(all, "not name H1 H2 H3 HA HB1 HB2 HG HD11 HD12 HD13 HD21 HD22 HD23 H", ndx_groups);
+    select_t *not_hydrogens_from_hydrogens = smart_select(hydrogens, "not name H1 H2 H3 HA HB1 HB2 HG HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
     assert(hydrogens != NULL);
+    assert(not_hydrogens != NULL);
+    assert(not_hydrogens_from_hydrogens != NULL);
     assert(selection_compare_strict(manual_hydrogens, hydrogens));
+    assert(not_hydrogens->n_atoms == all->n_atoms - hydrogens->n_atoms);
+    for (size_t i = 0; i < not_hydrogens->n_atoms; ++i) {
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "H1"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "H2"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "H3"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HA"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HB1"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HB2"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HG"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD11"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD12"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD13"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD13"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD21"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD22"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "HD23"));
+        assert(strcmp(not_hydrogens->atoms[i]->atom_name, "H"));
+    }
+    assert(not_hydrogens_from_hydrogens->n_atoms == 0);
+
     free(manual_hydrogens);
     free(hydrogens);
+    free(not_hydrogens);
+    free(not_hydrogens_from_hydrogens);
+
 
     select_t *manual_o = select_atoms(all, "O", &match_atom_name);
     select_t *o = smart_select(all, "nameO", ndx_groups);
@@ -1388,19 +1690,34 @@ static void test_smart_select(void)
     select_t *serial2 = smart_select(all, "serial 73 2 6542 9875 42653 23463", ndx_groups);
     select_t *serial3 = smart_select(all, "serial 73 73 73 73 73 2 6542 9875 42653 23463", NULL);
     select_t *serial4 = smart_select(all, "serial 76532 73 6542 9875 23463 2 987654 42653", ndx_groups);
+    select_t *not_serial = smart_select(all, "! serial 76532 73 6542 9875 23463 2 987654 42653", ndx_groups);
     assert(serial != NULL);
     assert(serial2 != NULL);
     assert(serial3 != NULL);
     assert(serial4 != NULL);
+    assert(not_serial != NULL);
     assert(selection_compare_strict(manual_serial, serial));
     assert(selection_compare_strict(manual_serial, serial2));
     assert(selection_compare_strict(manual_serial, serial3));
     assert(selection_compare_strict(manual_serial, serial4));
+    assert(not_serial->n_atoms == all->n_atoms - serial4->n_atoms);
+    for (size_t i = 0; i < not_serial->n_atoms; ++i) {
+        assert(not_serial->atoms[i]->gmx_atom_number != 76532);
+        assert(not_serial->atoms[i]->gmx_atom_number != 73);
+        assert(not_serial->atoms[i]->gmx_atom_number != 6542);
+        assert(not_serial->atoms[i]->gmx_atom_number != 9875);
+        assert(not_serial->atoms[i]->gmx_atom_number != 23463);
+        assert(not_serial->atoms[i]->gmx_atom_number != 2);
+        assert(not_serial->atoms[i]->gmx_atom_number != 987654);
+        assert(not_serial->atoms[i]->gmx_atom_number != 42653);
+    }
+
     free(manual_serial);
     free(serial);
     free(serial2);
     free(serial3);
     free(serial4);
+    free(not_serial);
 
     // index selection
     select_t *manual_sidechain = (atom_selection_t *) dict_get(ndx_groups, "SideChain");
@@ -1413,13 +1730,31 @@ static void test_smart_select(void)
     select_t *wion = smart_select(all, "W_ION", ndx_groups);
     assert(wion != NULL);
     assert(selection_compare_strict(manual_wion, wion));
+
+    select_t *not_wion = smart_select(all, "not W_ION", ndx_groups);
+    assert(not_wion != NULL);
+    assert(not_wion->n_atoms == all->n_atoms - wion->n_atoms);
+    assert(not_wion->atoms[13]->atom_number == 14);
+    assert(not_wion->atoms[13]->residue_number == 1);
+    assert(!strcmp(not_wion->atoms[13]->residue_name, "LEU"));
+    assert(!strcmp(not_wion->atoms[13]->atom_name, "HD12"));
+
     free(wion);
+    free(not_wion);
 
     // select all
     select_t *smart_all = smart_select(all, NULL, NULL);
+    select_t *smart_all_query1 = smart_select(all, "all", NULL);
+    select_t *smart_all_query2 = smart_select(all, "   all   ", NULL);
     assert(smart_all != NULL);
+    assert(smart_all_query1 != NULL);
+    assert(smart_all_query2 != NULL);
     assert(selection_compare_strict(all, smart_all));
+    assert(selection_compare_strict(all, smart_all_query1));
+    assert(selection_compare_strict(all, smart_all_query2));
     free(smart_all);
+    free(smart_all_query1);
+    free(smart_all_query2);
 
     free(system);
     free(all);
@@ -1437,9 +1772,7 @@ static void test_smart_select_fails(void)
 
     assert(ndx_groups != NULL);
 
-    // query too long
-    select_t *selection = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG HD11 HD12 HD13 HD21 HD22 HD23 H N CA C CB CG HN1 HN2 HN3 C12 H12A H12B C11 H11A H11B P O13 O14 O11 O12 C1 HS C2 O21 O22 C21 C22 H2R H2S C3 HX HY", NULL);
-    assert(selection == NULL);
+    select_t *selection = NULL;
 
     // invalid selection
     select_t *selection2 = smart_select(selection, "resname POPE", ndx_groups);
@@ -1463,17 +1796,581 @@ static void test_smart_select_fails(void)
     printf("OK\n");
 }
 
-/*  FILE *output = fopen("test.gro", "w");
-    write_gro(output, selection, system->box, no_velocities, "Something");
-    fclose(output);*/
+static void test_smart_select_advanced(void)
+{
+    printf("%-40s", "smart_select (advanced) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    // residue names
+    select_t *pope = smart_select(all, "resname POPE", NULL);
+    select_t *popg = smart_select(all, "resname POPG", NULL);
+    select_t *leu = smart_select(all, "resname LEU", NULL); 
+    select_t *manual_pope_or_popg = selection_cat_d(pope, popg);
+    select_t *manual_pope_or_popg_or_leu = selection_cat(manual_pope_or_popg, leu);
+    select_t *auto_pope_or_popg1 = smart_select(all, "resname POPE or resname POPG   ", NULL);
+    select_t *auto_pope_or_popg2 = smart_select(all, "   resname POPE  || resname POPG", NULL);
+    select_t *auto_pope_and_popg1 = smart_select(all, " resname POPE and resname POPG", NULL);
+    select_t *auto_pope_and_popg2 = smart_select(all, "resname POPE &&      resname POPG  ", NULL);
+    select_t *auto_pope_or_popg_or_leu = smart_select(all, "resname POPE        or resname POPG || resname LEU", NULL);
+    assert(auto_pope_or_popg1 != NULL);
+    assert(auto_pope_or_popg2 != NULL);
+    assert(auto_pope_and_popg1 != NULL);
+    assert(auto_pope_and_popg2 != NULL);
+    assert(auto_pope_or_popg_or_leu != NULL);
+    assert(selection_compare_strict(manual_pope_or_popg, auto_pope_or_popg1));
+    assert(selection_compare_strict(manual_pope_or_popg, auto_pope_or_popg2));
+    assert(selection_compare_strict(auto_pope_or_popg_or_leu, manual_pope_or_popg_or_leu));
+    assert(auto_pope_and_popg1->n_atoms == 0);
+    assert(auto_pope_and_popg2->n_atoms == 0);
+
+    free(leu);
+    free(manual_pope_or_popg);
+    free(manual_pope_or_popg_or_leu);
+    free(auto_pope_or_popg1);
+    free(auto_pope_or_popg2);
+    free(auto_pope_and_popg1);
+    free(auto_pope_and_popg2);
+    free(auto_pope_or_popg_or_leu);
+
+    
+    // residue numbers
+    select_t *res1 = smart_select(all, "resid 8874 7734 4 5", NULL);
+    select_t *res2 = smart_select(all, "resid 6 9207 1", NULL);
+    select_t *manual_res12 = selection_cat_d(res1, res2);
+    select_t *auto_res12 = smart_select(all, "resid 8874 7734 4 5 or resid 6 9207 1", NULL);
+    assert(auto_res12 != NULL);
+    assert(selection_compare_strict(manual_res12, auto_res12));
+
+    select_t *not_resid = smart_select(all, "! resid 8874 7734 4 5 6 9207 1 || resid 8874", NULL);
+    assert(not_resid != NULL);
+    assert(not_resid->n_atoms == all->n_atoms - manual_res12->n_atoms + 3);
+    assert(not_resid->atoms[not_resid->n_atoms - 1]->residue_number == 8874);
+
+    free(manual_res12);
+    free(auto_res12);
+    free(not_resid);
+
+    // atom names
+    select_t *hydrogens1 = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG", NULL);
+    select_t *hydrogens2 = smart_select(all, "name HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
+    select_t *hd11 = smart_select(all, "name HD11", NULL);
+    select_t *manual_hydrogens12 = selection_cat_d(hydrogens1, hydrogens2);
+    select_t *auto_hydrogens12 = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG or name HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
+    select_t *auto_hydrogens_and1 = smart_select(all, "name H1 H2 H3 HA HB1 HD11 HB2 HG and name HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
+    select_t *auto_hydrogens_and2 = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG HD11 && name HD11 HD12 HD13 HD21 HD22 HD23 H", NULL);
+    select_t *auto_hydrogens_and3 = smart_select(all, "name H1 H2 H3 HA HB1 HB2 HG HD11 && name HD11 HD12 HD13 HD21 HD22 HD23 H and name HD13 HD21 H1 H2 HD11", NULL);
+    assert(auto_hydrogens12 != NULL);
+    assert(auto_hydrogens_and1 != NULL);
+    assert(auto_hydrogens_and2 != NULL);
+    assert(selection_compare_strict(manual_hydrogens12, auto_hydrogens12));
+    assert(selection_compare_strict(hd11, auto_hydrogens_and1));
+    assert(selection_compare_strict(hd11, auto_hydrogens_and2));
+    assert(selection_compare_strict(hd11, auto_hydrogens_and3));
+    
+    free(hd11);
+    free(manual_hydrogens12);
+    free(auto_hydrogens12);
+    free(auto_hydrogens_and1);
+    free(auto_hydrogens_and2);
+    free(auto_hydrogens_and3);
+
+    // atom numbers
+    select_t *serial1 = smart_select(all, "serial 73 6542 9875", NULL);
+    select_t *serial2 = smart_select(all, "serial 23463 2 42653", NULL);
+    select_t *serial3 = smart_select(all, "! serial 73 23463 2", NULL);
+    select_t *serial12 = selection_cat_d(serial1, serial2);
+    select_t *manual_serial_complex = selection_intersect_d(serial12, serial3);
+    select_t *auto_serial_complex = smart_select(all, "serial 73 6542 9875 or serial 23463 2 42653 && not serial 73 23463 2", NULL);
+    assert(auto_serial_complex != NULL);
+    assert(selection_compare_strict(manual_serial_complex, auto_serial_complex));
+    assert(auto_serial_complex->n_atoms == 3);
+
+    free(manual_serial_complex);
+    free(auto_serial_complex);
+
+    // ndx groups
+    select_t *sidechain = smart_select(all, "SideChain", ndx_groups);
+    select_t *protein = smart_select(all, "Protein", ndx_groups);
+    select_t *manual_scprotein = selection_cat(sidechain, protein);
+    select_t *manual_scprotein_unique = selection_cat_unique_d(sidechain, protein);
+    select_t *auto_scprotein = smart_select(all, "SideChain || Protein", ndx_groups);
+    assert(auto_scprotein != NULL);
+    assert(manual_scprotein->n_atoms != manual_scprotein_unique->n_atoms);
+    assert(selection_compare_strict(manual_scprotein_unique, auto_scprotein));
+
+
+    free(manual_scprotein);
+    free(manual_scprotein_unique);
+    free(auto_scprotein);
+
+    // residue names with residue numbers
+    select_t *pope2 = smart_select(all, "resname POPE", NULL);
+    select_t *resid = smart_select(all, "resid 29 33 38 8643 1315", NULL);
+    select_t *manual_poperes = selection_intersect(pope2, resid);
+    select_t *auto_poperes = smart_select(all, "resname POPE && resid 29 33 38 8643 1315", NULL);
+    select_t *auto_poperes2 = smart_select(all, "resid 29 33 38 8643 1315 && resname POPE", NULL);
+    assert(auto_poperes != NULL);
+    assert(auto_poperes2 != NULL);
+    assert(selection_compare_strict(manual_poperes, auto_poperes));
+    assert(selection_compare_strict(manual_poperes, auto_poperes2));
+
+    free(manual_poperes);
+    free(auto_poperes);
+    free(auto_poperes2);
+
+    // residue names with atom names
+    select_t *atoms = smart_select(all, "name HN1 HN2 HN3 C2 HS", NULL);
+    select_t *manual_popeatoms = selection_intersect(pope2, atoms);
+    select_t *auto_popeatoms = smart_select(all, "resname POPE and name HN1 HN2 HN3 C2 HS", NULL);
+    assert(auto_popeatoms != NULL);
+    assert(selection_compare_strict(manual_popeatoms, auto_popeatoms));
+
+    free(manual_popeatoms);
+    free(auto_popeatoms);
+
+    // residue names with atom numbers
+    select_t *serial = smart_select(all, "serial 468 469 470 471 472 473 474", NULL);
+    select_t *manual_popeserial = selection_intersect(serial, pope2);
+    select_t *auto_popeserial = smart_select(all, "serial 468 469 470 471 472 473 474 && resname POPE", NULL);
+    assert(auto_popeserial != NULL);
+    assert(selection_compare_strict(manual_popeserial, auto_popeserial));
+    for (size_t i = 0; i < auto_popeserial->n_atoms; ++i) {
+        assert(auto_popeserial->atoms[i]->residue_number == 23);
+    }
+
+    free(manual_popeserial);
+    free(auto_popeserial);
+    free(pope2);
+
+    // residue names with NDX groups
+    select_t *serines = smart_select(all, "resname SER", NULL);
+    select_t *backbone = smart_select(all, "Backbone", ndx_groups);
+    select_t *manual_bbser = selection_intersect(serines, backbone);
+    select_t *manual_bbser_or = selection_cat_unique_d(serines, backbone);
+    select_t *auto_bbser = smart_select(all, "resname SER and Backbone", ndx_groups);
+    select_t *auto_bbser_or = smart_select(all, "resname SER or Backbone", ndx_groups);
+
+    assert(auto_bbser_or != NULL);
+    assert(auto_bbser != NULL);
+    assert(selection_compare_strict(manual_bbser, auto_bbser));
+    assert(selection_compare_strict(manual_bbser_or, auto_bbser_or));
+
+    free(manual_bbser);
+    free(auto_bbser);
+    free(manual_bbser_or);
+    free(auto_bbser_or);
+
+    // residue numbers with atom names
+    select_t *manual_residatoms = selection_intersect(resid, atoms);
+    select_t *auto_residatoms = smart_select(all, "   resid 29 33 38 8643 1315  && name HN1 HN2 HN3 C2 HS", NULL);
+
+    assert(auto_residatoms != NULL);
+    assert(selection_compare_strict(manual_residatoms, auto_residatoms));
+
+    free(manual_residatoms);
+    free(auto_residatoms);
+
+    // residue numbers with atom numbers
+    select_t *serial_for_resid = smart_select(all, "serial 1814    1817    1819", NULL);
+    select_t *manual_residserial = selection_intersect(resid, serial_for_resid);
+    select_t *auto_residserial = smart_select(all, "resid 29        33 38 8643 1315 && serial 1814    1817    1819          ", NULL);
+
+    assert(auto_residserial != NULL);
+    assert(auto_residserial->n_atoms == 3);
+    assert(selection_compare_strict(manual_residserial, auto_residserial));
+
+    free(manual_residserial);
+    free(auto_residserial);
+    free(serial_for_resid);
+
+    // residue numbers with NDX groups
+    select_t *nonprotein = smart_select(all, "non-Protein", ndx_groups);
+    select_t *manual_residindex = selection_intersect_d(resid, nonprotein);
+    select_t *auto_residindex = smart_select(all, "resid 29 33 38 8643 1315 and non-Protein  ", ndx_groups);
+
+    assert(auto_residindex != NULL);
+    assert(selection_compare_strict(manual_residindex, auto_residindex));
+
+    free(manual_residindex);
+    free(auto_residindex);
+
+    // atom names with atom numbers
+    select_t *atoms2 = smart_select(all, "name P O13 C1", NULL);
+    select_t *manual_atomsserial = selection_intersect(atoms2, serial);
+    select_t *auto_atomsserial = smart_select(all, "name P O13 C1 and serial 468 469 470 471 472 473 474", NULL);
+
+    assert(auto_atomsserial != NULL);
+    assert(auto_atomsserial->n_atoms == 3);
+    assert(selection_compare_strict(manual_atomsserial, auto_atomsserial));
+
+    free(atoms2);
+    free(manual_atomsserial);
+    free(auto_atomsserial);
+
+    // atom names with NDX groups
+    select_t *membrane = smart_select(all, "Membrane", ndx_groups);
+    select_t *manual_atomsindex = selection_intersect_d(membrane, atoms);
+    select_t *auto_atomsindex = smart_select(all, "name HN1 HN2 HN3 C2 HS && Membrane", ndx_groups);
+
+    assert(auto_atomsindex != NULL);
+    assert(selection_compare_strict(manual_atomsindex, auto_atomsindex));
+
+    free(manual_atomsindex);
+    free(auto_atomsindex);
+
+    // atom numbers with NDX groups
+    select_t *pope_ndx = smart_select(all, "POPE", ndx_groups);
+    select_t *manual_serialindex = selection_intersect_d(pope_ndx, serial);
+    select_t *auto_serialindex = smart_select(all, "POPE && serial 468 469 470 471 472 473 474", ndx_groups);
+
+    assert(auto_serialindex != NULL);
+    assert(selection_compare_strict(manual_serialindex, auto_serialindex));
+
+    free(manual_serialindex);
+    free(auto_serialindex);
+
+
+    // complex operation with AND, OR and NOT
+    select_t *lipid_residues = smart_select(all, "resid 31 164 165 168", NULL);
+    select_t *membrane_ndx = smart_select(all, "Membrane", ndx_groups);
+    select_t *not_popg_resname = smart_select(all, "not resname POPG", ndx_groups);
+    select_t *not_p_name = smart_select(all, "! name P", NULL);
+    select_t *pope_ndx2 = smart_select(all, "POPE", ndx_groups);
+    select_t *protein_serial = smart_select(all, "serial 132 191 150 162", NULL);
+
+    select_t *step1 = selection_intersect_d(lipid_residues, membrane_ndx);
+    select_t *step2 = selection_intersect_d(step1, not_popg_resname);
+    select_t *step3 = selection_intersect_d(step2, not_p_name);
+    select_t *step4 = selection_cat_unique_d(step3, pope_ndx2);
+    select_t *step5 = selection_cat_unique_d(step4, protein_serial);
+    
+    select_t *auto_step5 = smart_select(all, "resid 31 164 165 168 and Membrane && not resname POPG and ! name P or POPE || serial 132 191 150 162", ndx_groups);
+
+    assert(auto_step5);
+    assert(selection_compare_strict(step5, auto_step5));
+
+    free(step5);
+    free(auto_step5);
+    
+
+    free(system);
+    free(all);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
+
+
+static void test_smart_select_to(void)
+{
+    printf("%-40s", "smart_select (to) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    // success selections
+
+    select_t *manual_selection1 = smart_select(all, "serial 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44", NULL);
+    select_t *manual_selection2 = smart_select(all, "serial 1 2 3 4 5 6", NULL);
+    select_t *manual_selection3 = smart_select(all, "resid 1 2 3", NULL);
+    select_t *manual_selection4 = smart_select(all, "serial 1 2 3 4 5 6 7 8 9 10 11 && Backbone", ndx_groups);
+    select_t *manual_selection5 = smart_select(all, "serial 1 2 3 4 5 6 12 13 14 15 1654 1655 1656 1657 1658 1659 1660", NULL);
+    select_t *manual_selection6 = smart_select(all, "not resid 14 15 16 17 18 19", NULL);
+
+    select_t *selection1 = smart_select(all, "serial 1 to 44", NULL);
+    select_t *selection2 = smart_select(all, "serial   1 -    6", NULL);
+    select_t *selection3 = smart_select(all, "resid 1 to 3", NULL);
+    select_t *selection4 = smart_select(all, "serial 1 to 11 and Backbone", ndx_groups);
+    select_t *selection5 = smart_select(all, "serial 1 - 6 12 13 14 15 1654 to 1660", NULL);
+    select_t *selection6 = smart_select(all, "not resid 14 - 19", NULL);
+    select_t *selection7 = smart_select(all, "serial 8 to 8 to 8", NULL);
+
+    assert(selection1 != NULL);
+    assert(selection2 != NULL);
+    assert(selection3 != NULL);
+    assert(selection4 != NULL);
+    assert(selection5 != NULL);
+    assert(selection6 != NULL);
+    assert(selection7 != NULL);
+    assert(selection_compare_strict(manual_selection1, selection1));
+    assert(selection_compare_strict(manual_selection2, selection2));
+    assert(selection_compare_strict(manual_selection3, selection3));
+    assert(selection_compare_strict(manual_selection4, selection4));
+    assert(selection_compare_strict(manual_selection5, selection5));
+    assert(selection_compare_strict(manual_selection6, selection6));
+    assert(selection7->n_atoms == 1);
+
+    free(manual_selection1);
+    free(manual_selection2);
+    free(manual_selection3);
+    free(manual_selection4);
+    free(manual_selection5);
+    free(manual_selection6);
+
+    free(selection1);
+    free(selection2);
+    free(selection3);    
+    free(selection4);
+    free(selection5);
+    free(selection6);
+    free(selection7);
+
+    // fail selections
+
+    select_t *selection_f1 = smart_select(all, "serial to", NULL);
+    select_t *selection_f2 = smart_select(all, "serial 1 to ", NULL);
+    select_t *selection_f3 = smart_select(all, "resid 1 - g", NULL);
+    select_t *selection_f4 = smart_select(all, "serial - 2", NULL);
+    select_t *selection_f5 = smart_select(all, "resid g - h", NULL);
+    select_t *selection_f6 = smart_select(all, "serial 1 - to 5", NULL);
+    select_t *selection_f7 = smart_select(all, "serial 8 - 6", NULL);
+    select_t *selection_f8 = smart_select(all, "serial 4 to 9 - 5", NULL);
+
+    assert(selection_f1 == NULL);
+    assert(selection_f2 == NULL);
+    assert(selection_f3 == NULL);
+    assert(selection_f4 == NULL);
+    assert(selection_f5 == NULL);
+    assert(selection_f6 == NULL);
+    assert(selection_f7 == NULL);
+    assert(selection_f8 == NULL);
+
+
+
+    dict_destroy(ndx_groups);
+    free(all);
+    free(system);
+    printf("OK\n");
+}
+
+static void test_smart_select_advanced_fails(void)
+{
+    printf("%-40s", "smart_select (advanced, fails) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    select_t *selection1 = smart_select(all, "resid 766 43 234 && 1 to 54", NULL);
+    assert(selection1 == NULL);
+    select_t *selection2 = smart_select(all, "resid 766 43 24 || 1 to 54", NULL);
+    assert(selection2 == NULL);
+    select_t *selection3 = smart_select(all, "&& 1 to 44 || resname POPE", NULL);
+    assert(selection3 == NULL);
+    select_t *selection4 = smart_select(all, "name HD11 HD12 && resname && POPE", NULL);
+    assert(selection4 == NULL);
+    select_t *selection5 = smart_select(all, "resname POPG && x > 50", NULL);
+    assert(selection5 == NULL);
+    select_t *selection6 = smart_select(all, "resid 1 to 4 || Nonexistent", ndx_groups);
+    assert(selection6 == NULL);
+    select_t *selection7 = smart_select(all, "serial 1 - 64 &&", NULL);
+    assert(selection7 == NULL);
+    select_t *selection8 = smart_select(all, "resname POPE POPG ||", NULL);
+    assert(selection8 == NULL);
+
+    free(system);
+    free(all);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
+
+static void test_smart_select_parentheses(void)
+{
+    printf("%-40s", "smart_select (parentheses) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    select_t *selection1 = smart_select(all, "resid 65 to 67", NULL);
+    select_t *selection1_par = smart_select(all, "(resid 65 to 67)", NULL);
+    assert(selection1_par != NULL);
+    assert(selection_compare_strict(selection1, selection1_par));
+
+    free(selection1);
+    free(selection1_par);
+
+    select_t *selection2 = smart_select(all, "POPE && serial 500 to 600", ndx_groups);
+    select_t *selection2_par = smart_select(all, "(POPE or POPG) and serial 500 to 600", ndx_groups);
+    assert(selection2_par != NULL);
+    assert(selection_compare_strict(selection2, selection2_par));
+
+    free(selection2);
+    free(selection2_par);
+
+    select_t *selection3_1 = smart_select(all, "serial 1 to 13 && name H1 H2 H3", NULL);
+    select_t *selection3_2 = smart_select(all, "resname POPE && name P && resid 147 - 149", ndx_groups);
+    select_t *selection3 = selection_cat_d(selection3_1, selection3_2);
+    select_t *selection3_par = smart_select(all, "(serial 1 to 13 && name H1 H2 H3) || (resname POPE && name P && resid 147 - 149)", ndx_groups);
+    select_t *selection3_par_adv = smart_select(all, "(   serial 1 to 13 && name H1 H2 H3 )  || (    resname POPE && name P && resid 147 - 149 )   ", ndx_groups);
+    assert(selection3_par != NULL);
+    assert(selection3_par_adv != NULL);
+    assert(selection_compare_strict(selection3, selection3_par));
+    assert(selection_compare_strict(selection3, selection3_par_adv));
+
+    free(selection3);
+    free(selection3_par);
+    free(selection3_par_adv);
+
+    select_t *selection4 = smart_select(all, "Backbone && serial 1 to 5", ndx_groups);
+    select_t *selection4_par = smart_select(all, "(Backbone) and serial 1 to 5", ndx_groups);
+    assert(selection4_par != NULL);
+    assert(selection_compare_strict(selection4, selection4_par));
+
+    free(selection4);
+    free(selection4_par);
+
+    select_t *selection5_1 = smart_select(all, "Protein and resid 1 to 5", ndx_groups);
+    select_t *selection5_2 = smart_select(all, "resname POPE && name P", NULL);
+    select_t *selection5_12 = selection_cat_unique_d(selection5_1, selection5_2);
+    select_t *selection5_3 = smart_select(all, "resid 1 to 33", NULL);
+    select_t *selection5_123 = selection_intersect_d(selection5_12, selection5_3);
+    select_t *selection5_4 = smart_select(all, "ION or resid 9088 9089", ndx_groups);
+    select_t *selection5 = selection_cat_unique_d(selection5_123, selection5_4);
+    select_t *selection5_par = smart_select(all, "( ( (Protein and resid 1 to 5) || (resname POPE && name P) ) && resid 1 to 33 ) || (ION or resid 9088 to 9089)", ndx_groups);
+    select_t *selection5_par_alt = smart_select(all, "(((Protein and resid 1 to 5) || (resname POPE && name P)) && resid 1 to 33) || (ION or resid 9088 to 9089)", ndx_groups);
+    assert(selection5_par != NULL);
+    assert(selection5_par_alt != NULL);
+    assert(selection_compare_strict(selection5, selection5_par));
+    assert(selection_compare_strict(selection5, selection5_par_alt));
+    free(selection5);
+    free(selection5_par);
+    free(selection5_par_alt);
+
+    select_t *selection6 = smart_select(all, "resname LEU && name CA", NULL);
+    select_t *selection6_par = smart_select(all, "(resname LEU and name CA ) || (resname LEU and name CA )", NULL);
+    assert(selection6_par != NULL);
+    assert(selection_compare_strict(selection6, selection6_par));
+    free(selection6);
+    free(selection6_par);
+
+    select_t *selection7_1 = smart_select(all, "resname SER and not serial 20 to 30", NULL);
+    select_t *selection7_2 = smart_select(all, "! resname POPE && name P", NULL);
+    select_t *selection7 = selection_cat_unique_d(selection7_1, selection7_2);
+    select_t *selection7_par = smart_select(all, "(resname SER and not serial 20 to 30) || (! resname POPE && name P)", NULL);
+    assert(selection7_par != NULL);
+    assert(selection_compare_strict(selection7, selection7_par));
+    free(selection7);
+    free(selection7_par);
+
+    select_t *selection8 = smart_select(all, "not resname SOL NA CL && not resid 1 to 15", NULL);
+    select_t *selection8_par1 = smart_select(all, "! (resname SOL NA CL || resid 1 to 15)", NULL);
+    select_t *selection8_par2 = smart_select(all, "not (resname SOL NA CL or resid 1 to 15)", NULL);
+    select_t *selection8_par3 = smart_select(all, "not ( ! (not resname SOL NA CL && not resid 1 to 15))", NULL);
+    select_t *selection8_par4 = smart_select(all, "not (! (not resname SOL NA CL && not resid 1 to 15))", NULL);
+    assert(selection8_par1 != NULL);
+    assert(selection8_par2 != NULL);
+    assert(selection8_par3 != NULL);
+    assert(selection8_par4 != NULL);
+    assert(selection_compare_strict(selection8, selection8_par1));
+    assert(selection_compare_strict(selection8, selection8_par2));
+    assert(selection_compare_strict(selection8, selection8_par3));
+    assert(selection_compare_strict(selection8, selection8_par4));
+    free(selection8);
+    free(selection8_par1);
+    free(selection8_par2);
+    free(selection8_par3);
+    free(selection8_par4);
+
+    select_t *selection9_1 = smart_select(all, "not resname SOL NA CL && not resid 1 to 15", NULL);
+    select_t *selection9 = smart_select(selection9_1, "resname POPE", NULL);
+    free(selection9_1);
+    select_t *selection9_par = smart_select(all, "resname POPE && ! (resname SOL NA CL or resid 1 to 15)", NULL);
+    select_t *selection9_par2 = smart_select(all, "! (resname SOL NA CL or resid 1 to 15) && resname POPE", NULL);
+    assert(selection9_par != NULL);
+    assert(selection9_par2 != NULL);
+    assert(selection_compare_strict(selection9, selection9_par));
+    assert(selection_compare_strict(selection9, selection9_par2));
+    free(selection9);
+    free(selection9_par);
+    free(selection9_par2);
+
+    select_t *selection10 = smart_select(all, "resname SOL NA CL or resid 1 to 15 or not resname POPE", NULL);
+    select_t *selection10_par = smart_select(all, "! (not (resname SOL NA CL or resid 1 to 15) && resname POPE)", NULL);
+    assert(selection10_par != NULL);
+    assert(selection_compare(selection10, selection10_par));
+    free(selection10);
+    free(selection10_par);
+
+    free(system);
+    free(all);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
+
+static void test_smart_select_parentheses_fails(void)
+{
+    printf("%-40s", "smart_select (parentheses, fails) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    // incorrect number of parentheses
+    select_t *selection1 = smart_select(all, "((resname SOL)", NULL);
+    assert(selection1 == NULL);
+
+    select_t *selection2 = smart_select(all, "(resname SOL))", NULL);
+    assert(selection2 == NULL);
+
+    select_t *selection3 = smart_select(all, "((((resname SOL)))", NULL);
+    assert(selection3 == NULL);
+
+    select_t *selection4 = smart_select(all, "resname SOL )", NULL);
+    assert(selection4 == NULL);
+
+    select_t *selection5 = smart_select(all, " ( ( resname SOL      )  ", NULL);
+    assert(selection5 == NULL);
+
+    // incorrect spacing around operators
+    select_t *selection6 = smart_select(all, "(resname POPE)&&(name P)", NULL);
+    assert(selection6 == NULL);
+
+    // nonsensical queries
+    select_t *selection7 = smart_select(all, "resname POPG && ( && 1 to 44 || resname POPE)", NULL);
+    assert(selection7 == NULL);
+
+    select_t *selection8 = smart_select(all, "resname POPG && (&& 1 to 44 || resname POPE)", NULL);
+    assert(selection8 == NULL);
+
+    select_t *selection9 = smart_select(all, "(POPE && (resxdd 1 to 45 || name P)) || serial 1 to 45", ndx_groups);
+    assert(selection9 == NULL);
+
+    // characters before or after parenthesis
+    select_t *selection10 = smart_select(all, "resname (POPE && resid 55 to 60) POPG", ndx_groups);
+    assert(selection10 == NULL);
+
+    select_t *selection11 = smart_select(all, "resname (POPE && resid 55 to 60)", ndx_groups);
+    assert(selection11 == NULL);
+
+    select_t *selection12 = smart_select(all, "(POPE && resid 55 to 60) serial 1 2 5", ndx_groups);
+    assert(selection12 == NULL);
+
+    free(system);
+    free(all);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
 
 void test_selection(void)
 {
     test_strsplit_space();
     test_strsplit_spacetab();
+
+    test_strstrip();
+    test_strstrip_zero();
+    test_strstrip_white();
+
+    test_strremwhite();
+    test_strremwhite_white();
+
     test_load_gro();
 
     test_match_residue_name();
+    test_match_residue_num();
     test_match_atom_name();
     test_match_atom_num();
 
@@ -1482,6 +2379,7 @@ void test_selection(void)
     test_selection_copy();
     test_selection_empty();
     test_selection_add_atom();
+    test_selection_add();
 
     test_select_atoms_atomname();
     test_select_atoms_atomname_multiple();
@@ -1527,6 +2425,11 @@ void test_selection(void)
 
     test_selection_fixres();
     test_selection_isin();
+    test_selection_getnres();
+    test_selection_getresnames();
+    test_selection_splitbyres();
+    test_selection_splitbyres_empty();
+    test_selection_splitbyres_broken();
 
     test_selection_to_system();
 
@@ -1540,7 +2443,13 @@ void test_selection(void)
     test_read_ndx_advanced();
     test_read_ndx_empty();
     test_read_ndx_nonexistent();
-
+    
     test_smart_select();
     test_smart_select_fails();
+    test_smart_select_advanced();
+    test_smart_select_to();
+    test_smart_select_advanced_fails();
+    test_smart_select_parentheses();
+    test_smart_select_parentheses_fails();
+    
 }
