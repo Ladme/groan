@@ -79,12 +79,12 @@ Joining two queries by `and` will select only atoms that were selected by BOTH o
 
 Joining two queries by `or` will select atoms that were selected by AT LEAST ONE of the queries. For example, `resname POPE or name P` will select all atoms that belong to residues named POPE as well as all atoms with the name P. Similarly, `resid 17 18 || serial 256 to 271` will select all atoms corresponding to residue 17 or 18 as well as all atoms with atom numbers between 256 and 271.
 
-In case multiple `and` and/or `or` operators are used in a single query, they are evaluated from left to right. For example, `resname POPE or name CA and not Protein` will select all atoms belonging to residues named POPE or having the atom name CA but all these atoms must not belong to the ndx group called Protein.
+In case multiple `and` and/or `or` operators are used in a single query, they are evaluated from left to right. For example, `resname POPE or name CA and not Protein` will select all atoms belonging to residues named POPE or having the atom name CA but all these atoms can not belong to the ndx group called Protein.
 
 Note again that `and`, `&&`, `or`, and `||` must all be separated from the rest of the query by a whitespace. Also note that there can be no more than 50 individual sub-queries connected by operators in a single query.
 
 ### Parentheses
-You can change the order in which the individual sub-queries and operations are evaluated by using parentheses `(` and `)`. Expressions enclosed in parentheses are evaluated first (think math). For example, `resname POPE or (name CA and not resid 18 to 21)` will select all atoms belonging to residues named POPE along with all atoms that a) have the atom name P and b) do not correspond to residues numbered 18 to 21. Meanwhile `(resname POPE or name CA) and not resid 18 to 21` is equivalent to `resname POPE or name CA and not resid 18 to 21` (described in the section above).
+You can change the order in which the individual sub-queries and operations are evaluated by using parentheses `(` and `)`. Expressions enclosed in parentheses are evaluated first (think math). For example, `resname POPE or (name CA and not resid 18 to 21)` will select all atoms belonging to residues named POPE along with all atoms that a) have the atom name P and b) do not correspond to residues numbered 18 to 21. Meanwhile `(resname POPE or name CA) and not resid 18 to 21` is equivalent to `resname POPE or name CA and not resid 18 to 21` (i.e. this will select all atoms belonging to residues named POPE or having the atom name CA but all of these atoms can't belong to residues 18 to 21).
 
 You can place parenthetical expressions into other parenthetical expressions. For example `serial 1 to 6 or ( name CA and resname POPE || (resid 1 to 7 or serial 123 to 128) ) and Protein` is a valid query, albeit possibly way too convoluted.
 
