@@ -10,7 +10,7 @@ Pure C library for analysis of Gromacs simulations.
 
 2) Run `make` to compile the library.
 
-3) Run `make install` to place the static library into `/usr/local/lib/` and the header file `/usr/local/include/`.
+3) Run `make install` to place the static library into `/usr/local/lib/` and the header file into `/usr/local/include/`.
 
 ### Windows / Mac OS
 
@@ -56,10 +56,11 @@ Select atoms based on their:
 
 You can specify multiple identifiers in your query. By using `resname POPE POPC`, you will select all atoms corresponding to residues named POPE, as well as all atoms corresponding to residues named POPC.
 See examples of similar queries below:
-`resid 13 15 16 17` will select all atoms corresponding to residues with number 13, 15, 16, or 17.
-`name P CA HA` will select all atoms with atom names P, CA, or HA.
-`serial 245 267 269 271` will select atoms with atom numbers 245, 267, 269, or 271.
-You can't use multiple identifiers for ndx groups. In this case, you have to use the `or` operator (see below).
+1) `resid 13 15 16 17` will select all atoms corresponding to residues with number 13, 15, 16, or 17.
+2) `name P CA HA` will select all atoms with atom names P, CA, or HA.
+3) `serial 245 267 269 271` will select atoms with atom numbers 245, 267, 269, or 271.
+
+You can't use multiple identifiers for ndx groups. In that case, you have to use the `or` operator (see below).
 
 You can also select all atoms by using `all`.
 
@@ -69,25 +70,25 @@ The length of the query is only limited by the size of your computer's memory. N
 Instead of writing residue or atom numbers explicitly, you can use keyword `to` or `-` to specify a range. For example, instead of writing `resid 14 15 16 17 18 19 20`, you can use `resid 14 to 20` or `resid 14 - 20`. This will select all atoms corresponding to residues with residue numbers 14, 15, 16, 17, 18, 19, and 20. Note that both `to` and `-` must always be separated from the rest of the query by (at least one) whitespace.
 
 ### Negations
-Using keyword `not` or `!` in front of the query will negate the query. For example, query `not name CA` or `! name CA` will select all atoms which name does NOT correspond to CA. Similarly, `not resname POPE POPG` will select all atoms which correspond to residues with names other than POPE or POPG. Note again that both `not` and `!` must always be separated from the rest of the query by a whitespace.
+Using keyword `not` or `!` in front of the query will negate the query. For example, query `not name CA` or `! name CA` will select all atoms which name does NOT correspond to CA. Similarly, `not resname POPE POPG` will select all atoms that correspond to residues with names other than POPE or POPG. Note again that both `not` and `!` must always be separated from the rest of the query by a whitespace.
 
 ### 'And' and 'or' operations
 You can combine basic queries by using `and` (`&&`) and `or` (`||`) operators. 
 
-Joining two queries by `and` will select only atoms which were selected by BOTH of the queries. For example, `resname POPE and name P` will select all atoms which belong to residues named POPE and which have the name P. Similarly, `resid 17 18 && serial 256 to 271` will select only atoms corresponding to residue 17 or 18 and with atom numbers between 256 and 271 (including 271).
+Joining two queries by `and` will select only atoms that were selected by BOTH of the queries. For example, `resname POPE and name P` will select all atoms that belong to residues named POPE and that have the name P. Similarly, `resid 17 18 && serial 256 to 271` will select only atoms corresponding to residue 17 or 18 and with atom numbers between 256 and 271 (including 271).
 
-Joining two queries by `or` will select atoms which were selected by AT LEAST ONE of the queries. For example, `resname POPE or name P` will select all atoms which belong to residues named POPE as well as all atoms with the name P. Similarly, `resid 17 18 || serial 256 to 271` will select all atoms corresponding to residue 17 or 18 as well as all atoms with atom numbers between 256 and 271.
+Joining two queries by `or` will select atoms that were selected by AT LEAST ONE of the queries. For example, `resname POPE or name P` will select all atoms that belong to residues named POPE as well as all atoms with the name P. Similarly, `resid 17 18 || serial 256 to 271` will select all atoms corresponding to residue 17 or 18 as well as all atoms with atom numbers between 256 and 271.
 
 In case multiple `and` and/or `or` operators are used in a single query, they are evaluated from left to right. For example, `resname POPE or name CA and not Protein` will select all atoms belonging to residues named POPE or having the atom name CA but all these atoms must not belong to the ndx group called Protein.
 
 Note again that `and`, `&&`, `or`, and `||` must all be separated from the rest of the query by a whitespace. Also note that there can be no more than 50 individual sub-queries connected by operators in a single query.
 
 ### Parentheses
-You can change the order in which the individual sub-queries and operations are evaluated by using parentheses `(` and `)`. Expressions enclosed in parentheses are evaluated first (think math). For example, `resname POPE or (name CA and not resid 18 to 21)` will select all atoms belonging to residues named POPE or all atoms which a) have the atom name P and b) do not correspond to residues numbered 18 to 21. Meanwhile `(resname POPE or name CA) and not resid 18 to 21` is equivalent to `resname POPE or name CA and not resid 18 to 21` (described in the section above).
+You can change the order in which the individual sub-queries and operations are evaluated by using parentheses `(` and `)`. Expressions enclosed in parentheses are evaluated first (think math). For example, `resname POPE or (name CA and not resid 18 to 21)` will select all atoms belonging to residues named POPE along with all atoms that a) have the atom name P and b) do not correspond to residues numbered 18 to 21. Meanwhile `(resname POPE or name CA) and not resid 18 to 21` is equivalent to `resname POPE or name CA and not resid 18 to 21` (described in the section above).
 
 You can place parenthetical expressions into other parenthetical expressions. For example `serial 1 to 6 or ( name CA and resname POPE || (resid 1 to 7 or serial 123 to 128) ) and Protein` is a valid query, albeit possibly way too convoluted.
 
-You can also place `not` (`!`) operator in front of a parenthetical expression. For example, `! (serial 1 to 6 && name P)` will select all atoms which do NOT have atom number between 1 and 6 while also having the atom name P.
+You can also place `not` (`!`) operator in front of a parenthetical expression. For example, `! (serial 1 to 6 && name P)` will select all atoms that do NOT have atom number between 1 and 6 while also having the atom name P.
 
 Note that parentheses are allowed to be but do not have to be separated from the rest of the query by a whitespace.
 
