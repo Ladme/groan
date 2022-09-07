@@ -10,7 +10,7 @@ Pure C library for analysis of Gromacs simulations.
 
 2) Run `make` to compile the library.
 
-3) Run `make install` to place the static library into `/usr/local/lib/` and the header file into `/usr/local/include/`.
+3) Run `sudo make install` to place the static library into `/usr/local/lib/` and the header file into `/usr/local/include/`.
 
 ### Windows / Mac OS
 
@@ -22,7 +22,7 @@ Validate the installation by running `./tests` in the `tests` directory. Do not 
 
 ## Usage
 
-Include `groan.h` in your code and link with `-lm -lgroan`.
+Include `groan.h` in your code and link with `-lgroan -lm`.
 
 ## Groan-associated programs
 

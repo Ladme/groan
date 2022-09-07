@@ -36,10 +36,10 @@ clean:
 	rm -f *.a *.o src/*.a src/*.o
 
 example: examples/example.c
-	gcc examples/example.c -L. -I. -lm -lgroan -std=c99 -pedantic -Wall -Wextra -DCREATEEXAMPLE -o examples/example
+	gcc examples/example.c -L. -I. -lgroan -lm -std=c99 -pedantic -Wall -Wextra -DCREATEEXAMPLE -o examples/example
 
 tests: tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c libgroan.a groan.h
-	gcc tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c -L. -I. -lm -lgroan -g -std=c99 -pedantic -Wall -Wextra -O3 -march=native -o tests/tests
+	gcc tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c -L. -I. -lgroan -lm -g -std=c99 -pedantic -Wall -Wextra -O3 -march=native -o tests/tests
 
 install: libgroan.a groan.h
 	cp -a libgroan.a /usr/local/lib/

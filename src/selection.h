@@ -181,11 +181,10 @@ void selection_add(
  * @paragraph Details
  * Loops through the atoms in input_atoms, matching them against
  * the individual elements in the match_string.
- * Currently only support single match_function for all the match elements.
+ * Only supports single match_function for all the match elements.
+ * Use smart_select() for more advanced queries.
  * 
  * The function allocates memory for a new selection and returns a pointer to this selection.
- * 
- * If input_atom_ids is NULL or n_input_atoms is zero, the function will loop through all atoms in the system.
  * 
  * @param input_atoms           selection of atoms to choose from
  * @param match_string          string of elements separated by spaces
