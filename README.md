@@ -10,8 +10,6 @@ Pure C library for analysis of Gromacs simulations.
 
 2) Run `make` to compile the library.
 
-3) Run `sudo make install` to place the static library into `/usr/local/lib/` and the header file into `/usr/local/include/`.
-
 ### Windows / Mac OS
 
 Sorry, no idea. Good luck.
@@ -27,7 +25,7 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 ## Groan-associated programs
 
 - avpos: calculate average positions of selected atoms
-- center: center simulation trajectory using Bai & Breen algorithm
+- [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
 - com: calculate center of geometry of a selection of atoms
 - contact: calculate contact matrix for selected atoms
 - crosection: calculate cross-sectional area of a selection of atoms
