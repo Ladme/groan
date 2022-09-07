@@ -601,26 +601,8 @@ atom_selection_t *select_geometry_d(
 
 /*! @brief Selects atoms based on provided string query. 
  *
- * @paragraph Supported queries
- * Currently the number of supported queries is not large.
- * You can select atoms based on their:
- *      > residue name, e.g. by using 'resname RESNAME1 RESNAME2'
- *        (all atoms with residue names RESNAME1 or RESNAME2 will be selected)
- *      > residue number, e.g. by using 'resid RESNUM1 RESNUM2'
- *      > atom name, e.g. by using 'name ATOMNAME1 ATOMNAM2 ATOMNAME3'
- *      > atom number, e.g. by using 'serial ATOMNUM1 ATOMNUM2 ATOMNUM3 ATOMNUM4'
- *        (note that gmx atom numbers will be used, not those atom numbers that are provided in gro file)
- *      > ndx group name, e.g. by using 'Protein'
- * Currently, combining the individual selection keywords is not supported.
- * You can do that manually by using various selection commands.
- * 
- * @paragraph Note on 'not'
- * Smart select supports 'not' queries. Adding 'not' or '!' in front of the selection query
- * causes that an inversion of this selection is returned.
- * E.g. using '! resname POPC' will return a selection of all atoms from 'selection' which residue name is not POPC.
- * 
- * @paragraph Maximal query length
- * Maximal length of the query is 499 characters. If the query is longer than that, NULL is returned.
+ * @paragraph Groan selection language
+ * See https://github.com/Ladme/groan#groan-selection-language for more information about what queries are supported by smart_select().
  * 
  * @paragraph Note on memory deallocation
  * The selection returned by this function must ALWAYS be freed when it is not needed anymore.
