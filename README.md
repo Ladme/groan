@@ -24,14 +24,11 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 
 ## Groan-associated programs
 
-- avpos: calculate average positions of selected atoms
 - [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
-- com: calculate center of geometry of a selection of atoms
+- [com](https://github.com/Ladme/com): calculate center of geometry of a selection of atoms
 - contact: calculate contact matrix for selected atoms
-- crosection: calculate cross-sectional area of a selection of atoms
-- gselect: select a group of atoms using Groan selection language
-- membrane disruption programs: collection of several programs for analyzing membrane disruption
-	- memplanes: calculate average position of phosphates in each leaflet of the membrane
+- [gselect](https://github.com/Ladme/gselect): select a group of atoms using Groan selection language
+- [memdian](https://github.com/Ladme/memdian): collection of several programs for analyzing membrane disruption
 	- memthick: calculate average membrane thickness across the membrane
 	- wdcalc: calculate average water defect in a cylinder
 	- wdmap: calculate average water defect across the membrane
@@ -42,7 +39,7 @@ Note that while groan library should work on pretty much any modern machine, all
 
 ## Groan selection language
 
-Groan library and its associated programs use "Groan selection language" to specify selections of atoms. Groan selection language is similar to the selection language used by VMD.
+Groan library and its associated programs use "Groan selection language" to specify selections of atoms. Groan selection language is similar to the selection language used by VMD. You can play around with the groan selection language using [gselect](https://github.com/Ladme/gselect).
 
 ### Basic queries
 Select atoms based on their:
@@ -55,8 +52,8 @@ Select atoms based on their:
 You can specify multiple identifiers in your query. By using `resname POPE POPC`, you will select all atoms corresponding to residues named POPE, as well as all atoms corresponding to residues named POPC.
 See examples of similar queries below:
 1) `resid 13 15 16 17` will select all atoms corresponding to residues with number 13, 15, 16, or 17.
-2) `name P CA HA` will select all atoms with atom names P, CA, or HA.
-3) `serial 245 267 269 271` will select atoms with atom numbers 245, 267, 269, or 271.
+2) `name P CA HA` will select all atoms with atom name P, CA, or HA.
+3) `serial 245 267 269 271` will select atoms with atom number 245, 267, 269, or 271.
 
 You can't use multiple identifiers for ndx groups. In that case, you have to use the `or` operator (see below).
 
@@ -67,8 +64,10 @@ The length of the query is only limited by the size of your computer's memory. N
 ### Ranges
 Instead of writing residue or atom numbers explicitly, you can use keyword `to` or `-` to specify a range. For example, instead of writing `resid 14 15 16 17 18 19 20`, you can use `resid 14 to 20` or `resid 14 - 20`. This will select all atoms corresponding to residues with residue numbers 14, 15, 16, 17, 18, 19, and 20. Note that both `to` and `-` must always be separated from the rest of the query by (at least one) whitespace.
 
+You can also specify multiple ranges in a single query or combine ranges with explicitly provided numbers. For example, `serial 1 3 to 6 10 12 to 14 17` will expand to `serial 1 3 4 5 6 10 12 13 14 17`.
+
 ### Negations
-Using keyword `not` or `!` in front of the query will negate the query. For example, query `not name CA` or `! name CA` will select all atoms which name does NOT correspond to CA. Similarly, `not resname POPE POPG` will select all atoms that correspond to residues with names other than POPE or POPG. Note again that both `not` and `!` must always be separated from the rest of the query by a whitespace.
+Using keyword `not` or `!` in front of a query will negate the query. For example, query `not name CA` or `! name CA` will select all atoms which name does NOT correspond to CA. Similarly, `not resname POPE POPG` will select all atoms that correspond to residues with names other than POPE or POPG. Note again that both `not` and `!` must always be separated from the rest of the query by a whitespace.
 
 ### 'And' and 'or' operations
 You can combine basic queries by using `and` (`&&`) and `or` (`||`) operators. 
@@ -90,9 +89,10 @@ You can also place `not` (`!`) operator in front of a parenthetical expression. 
 
 Note that parentheses are allowed to be but do not have to be separated from the rest of the query by a whitespace.
 
-
 ## Acknowledgments
 The groan library uses `xdrfile` library developed by David van der Speol and Erik Lindahl and published under the BSD License. Thank you!
+
+To calculate center of geometry/mass, the groan library and all its associated programs use Bai & Breen algorithm for calculating center of mass in periodic systems (https://doi.org/10.1080/2151237X.2008.10129266).
 
 ## Disclaimer
 Please note that while groan library is an attempt at creating a fast and reasonably robust library for analyzing Gromacs simulations, it is mostly a tool for improving my rather pathetic C programming skills. In other words, even though I'm doing my best, there WILL be bugs and memory leaks.
@@ -100,6 +100,3 @@ Please note that while groan library is an attempt at creating a fast and reason
 Also, the amount of time that went into designing the library to be user-friendly or even understandable to anyone other than me is... zero. There is some documentation and many of the functions do have names that actually make at least some sense but if you want to actually start using groan in your code... well, good luck with that.
 
 At the same time, I'm not saying that the library is completely worthless as I quite successfully use many of the groan-associated programs on a daily basis. And I do believe that THOSE programs could actually be useful to other people.
-
-
-

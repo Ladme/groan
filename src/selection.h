@@ -305,7 +305,7 @@ size_t selection_remove_atom(atom_selection_t *selection, atom_t *remove);
  * The amount of memory allocated to any selection is not changed by this function.
  * This is a pretty dumb and inefficient function as it simply consists of calling...
  * ...selection_intersect() on the two intersections and then looping through the atoms of the intersection...
- * ...removing them from the result using selection_remove().
+ * ...removing them from the result using selection_remove_atom().
  * 
  * @param selection_result             atom selection to modify
  * @param selection_sub                atom selection to be subtracted
