@@ -26,14 +26,14 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 
 - [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
 - [com](https://github.com/Ladme/com): calculate center of geometry of a selection of atoms
-- contact: calculate contact matrix for selected atoms
+- [contact](https://github.com/Ladme/contact): calculate contact matrix for selected atoms
 - [gselect](https://github.com/Ladme/gselect): select a group of atoms using Groan selection language
 - [memdian](https://github.com/Ladme/memdian): collection of several programs for analyzing membrane disruption
 	- memthick: calculate average membrane thickness across the membrane
 	- wdcalc: calculate average water defect in a cylinder
 	- wdmap: calculate average water defect across the membrane
-- scramblyzer: toolbox for analyzing lipid scrambling
-- order & ordermap: calculate lipid order parameters from coarse-grained trajectories
+- [scramblyzer](https://github.com/Ladme/scramblyzer): toolbox for analyzing lipid scrambling
+- [order & ordermap](https://github.com/Ladme/order): calculate lipid order parameters from coarse-grained trajectories
 
 Note that while groan library should work on pretty much any modern machine, all of the groan-associated programs require at least a basic level of POSIX-compliance and thus will most likely not work on Windows.
 
