@@ -1,4 +1,8 @@
 
+/* THIS IS AN OLD EXAMPLE FILE. THE CODE MAY WORK (MAYBE?) BUT IT DOES NOT REPRESENT THE CURRENT CAPABILITIES OF THE GROAN LIBRARY. 
+ * NEW VERSION COMING SOON(ISH).
+ */
+
 /* This file shows how to work with atom selections in groan library. 
  * Compile this code as 'gcc example.c -L.. -I.. -lm -lgroan -o example'.
  * The output of this example code is in 'example_output.gro'.

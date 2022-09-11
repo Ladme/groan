@@ -1742,6 +1742,14 @@ static void test_smart_select(void)
     free(wion);
     free(not_wion);
 
+    // multi-word index selection
+    select_t *normal_ion = smart_select(all, "ION", ndx_groups);
+    select_t *multi_ion = smart_select(all, "Interesting Selection", ndx_groups);
+    assert(multi_ion != NULL);
+    assert(selection_compare_strict(normal_ion, multi_ion));
+    free(normal_ion);
+    free(multi_ion);
+
     // select all
     select_t *smart_all = smart_select(all, NULL, NULL);
     select_t *smart_all_query1 = smart_select(all, "all", NULL);

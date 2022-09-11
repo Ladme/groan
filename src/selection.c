@@ -1266,16 +1266,27 @@ dict_t *read_ndx(const char *filename, system_t *system)
             continue;
         }
 
-        // if three items are detected, try getting the group name
-        else if (n_items == 3 && strcmp(split[0], "[") == 0) {
-            if (strcmp(split[2], "]") == 0) {
+        // if three or more items are detected, try getting the group name
+        else if (n_items >= 3 && strcmp(split[0], "[") == 0) {
+            if (strcmp(split[n_items - 1], "]") == 0) {
                 // if group name is detected, add the previous selection to the dictionary
                 if (current_selection != NULL) {
                     dict_set(ndx_selections, current_group, current_selection, sizeof(atom_selection_t) + alloc_atoms * sizeof(atom_t *));
                     free(current_selection);
                 }
 
-                strncpy(current_group, split[1], 99);
+                int offset = 0;
+                for (int i = 1; i < n_items - 1; ++i) {
+                    // add white space
+                    if (i != 1) {
+                        current_group[offset] = ' ';
+                        ++offset;
+                    }
+
+                    strncpy(current_group + offset, split[i], 99 - offset);
+                    offset += strlen(split[i]);
+                }
+                
                 alloc_atoms = INITIAL_SELECTION_SIZE;
                 current_selection = selection_create(alloc_atoms);
                 free(split);
