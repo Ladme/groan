@@ -33,8 +33,9 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 	- memthick: calculate average membrane thickness across the membrane
 	- wdcalc: calculate average water defect in a cylinder
 	- wdmap: calculate average water defect across the membrane
-- [scramblyzer](https://github.com/Ladme/scramblyzer): toolbox for analyzing lipid scrambling
 - [order & ordermap](https://github.com/Ladme/order): calculate lipid order parameters from coarse-grained trajectories
+- [position](https://github.com/Ladme/position): calculate center of geometry in time
+- [scramblyzer](https://github.com/Ladme/scramblyzer): toolbox for analyzing lipid scrambling
 
 Note that while groan library should work on pretty much any modern machine, all of the groan-associated programs require at least a basic level of POSIX-compliance and thus will most likely not work on Windows.
 
