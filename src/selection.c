@@ -368,7 +368,7 @@ size_t selection_remove_atom(atom_selection_t *selection, atom_t *remove)
     return deleted_atoms;
 }
 
-size_t selection_remove(atom_selection_t *selection_result, const atom_selection_t *selection_sub)
+size_t selection_remove_legacy(atom_selection_t *selection_result, const atom_selection_t *selection_sub)
 {
     // if the selections are identical, just empty selection_result and return its original length
     if (selection_result == selection_sub) {
@@ -388,6 +388,24 @@ size_t selection_remove(atom_selection_t *selection_result, const atom_selection
     size_t delete_n_atoms = to_delete->n_atoms;
     free(to_delete);
     return delete_n_atoms;
+}
+
+size_t selection_remove(atom_selection_t *selection_result, const atom_selection_t *selection_sub)
+{
+    // if the selections are identical, just empty selection_result and return its original length
+    if (selection_result == selection_sub) {
+        size_t original_length = selection_result->n_atoms;
+        selection_empty(selection_result);
+        return original_length;
+    }
+
+    size_t removed_atoms = 0;
+    // loop through the selection_sub, removing matching atoms from selection_result
+    for (size_t i = 0; i < selection_sub->n_atoms; ++i) {
+        removed_atoms += selection_remove_atom(selection_result, selection_sub->atoms[i]);
+    }
+
+    return removed_atoms;
 }
 
 size_t selection_remove_d(atom_selection_t *selection_result, atom_selection_t *selection_sub)

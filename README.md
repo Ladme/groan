@@ -27,7 +27,8 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 - [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
 - [com](https://github.com/Ladme/com): calculate center of geometry of a selection of atoms
 - [contact](https://github.com/Ladme/contact): calculate contact matrix for selected atoms
-- [gselect](https://github.com/Ladme/gselect): select a group of atoms using Groan selection language
+- [gndx](https://github.com/Ladme/gndx): create an ndx group from a selection using groan selection language
+- [gselect](https://github.com/Ladme/gselect): select a group of atoms using groan selection language
 - [memdian](https://github.com/Ladme/memdian): collection of several programs for analyzing membrane disruption
 	- memthick: calculate average membrane thickness across the membrane
 	- wdcalc: calculate average water defect in a cylinder
