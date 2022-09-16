@@ -1196,8 +1196,6 @@ static atom_selection_t *parse_query(atom_selection_t *selection, char *query, d
     
 
     return final;
-
-
 }
 
 atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups)
@@ -1233,6 +1231,144 @@ atom_selection_t *smart_select(atom_selection_t *selection, const char *query, d
 
     atom_selection_t *final = parse_query(selection, query_expanded, ndx_groups);
     free(query_expanded);
+
+    return final;
+}
+
+atom_selection_t *smart_geometry(
+        atom_selection_t *input_selection,
+        const char *selection_query, 
+        const char *reference_query,
+        const char *geometry_query,
+        dict_t *ndx_groups,
+        box_t system_box)
+{
+    if (input_selection == NULL) return NULL;
+    if (system_box == NULL) return NULL;
+
+    // get selection of atoms to include in the geometric selection
+    atom_selection_t *selection = smart_select(input_selection, selection_query, ndx_groups);
+    if (selection == NULL) {
+        return NULL;
+    }
+
+    if (geometry_query == NULL) return selection;
+
+    atom_selection_t *final = NULL;
+
+    vec_t reference_center = {0.0};
+
+    // if a reference query has been supplied, calculate its center of geometry
+    // otherwise, use {0, 0, 0} as the reference position
+    if (reference_query != NULL) {
+        // search for 'point'
+        char *ref_query = calloc(strlen(reference_query) + 1, 1);
+        strcpy(ref_query, reference_query);
+        char **ref_split = NULL;
+        size_t n_items = strsplit(ref_query, &ref_split, " \n\t");
+        if (n_items == 0) {
+            free(ref_query);
+            free(ref_split);
+            free(selection);
+            return NULL;
+        }
+
+        if (!strcmp(ref_split[0], "point")) {
+            if (n_items != 4) {
+                free(ref_query);
+                free(ref_split);
+                free(selection);
+                return NULL;
+            }
+
+            if (sscanf(ref_split[1], "%f", &reference_center[0]) != 1 || 
+                sscanf(ref_split[2], "%f", &reference_center[1]) != 1 ||
+                sscanf(ref_split[3], "%f", &reference_center[2]) != 1) {
+                    free(ref_query);
+                    free(ref_split);
+                    free(selection);
+                    return NULL;
+                }
+        
+        } else {
+            atom_selection_t *reference = smart_select(input_selection, reference_query, ndx_groups);
+            
+            if (reference == NULL || reference->n_atoms == 0) {
+                free(selection);
+                free(reference);
+                free(ref_split);
+                free(ref_query);
+                return NULL;
+            }
+
+            center_of_geometry(reference, reference_center, system_box);
+            free(reference);
+        }
+
+        free(ref_split);
+        free(ref_query);
+
+        
+    }
+
+    // parse geometry query
+    //   NAME     RADIUS   RANGE
+    // zcylinder   0.5      1-4
+    
+    //  NAME   RADIUS
+    // sphere    1
+    
+    // NAME  XDIM  YDIM   ZDIM
+    // box   1-4   2-3    0-5
+
+    // split geometric query
+    char *query = calloc(strlen(geometry_query) + 1, 1);
+    strcpy(query, geometry_query);
+    char **split = NULL;
+    size_t n_items = strsplit(query, &split, " \n\t");
+    if (n_items < 2) goto function_end;
+
+    if (!strcmp(split[0], "xcylinder") || !strcmp(split[0], "ycylinder") || !strcmp(split[0], "zcylinder")) {
+        if (n_items != 3) goto function_end;
+
+        float radius = 0.0;
+        if (sscanf(split[1], "%f", &radius) != 1) goto function_end;
+
+        float min = 0.0, max = 0.0;
+        if (sscanf(split[2], "%f-%f", &min, &max) != 2) goto function_end;
+
+        geometry_t geotype = xcylinder;
+        if (!strcmp(split[0], "ycylinder")) geotype = ycylinder;
+        else if (!strcmp(split[0], "zcylinder")) geotype = zcylinder;
+
+        float parameters[3] = {radius, min, max};
+
+        final = select_geometry(selection, reference_center, geotype, parameters, system_box); 
+
+    } else if (!strcmp(split[0], "sphere")) {
+        if (n_items != 2) goto function_end;
+
+        float radius = 0.0;
+        if (sscanf(split[1], "%f", &radius) != 1) goto function_end;
+        
+        final = select_geometry(selection, reference_center, sphere, &radius, system_box);
+
+    } else if (!strcmp(split[0], "box")) {
+        if (n_items != 4) goto function_end;
+
+        float parameters[6] = {0.0};
+        if (sscanf(split[1], "%f-%f", &parameters[0], &parameters[1]) != 2) goto function_end;
+        if (sscanf(split[2], "%f-%f", &parameters[2], &parameters[3]) != 2) goto function_end;
+        if (sscanf(split[3], "%f-%f", &parameters[4], &parameters[5]) != 2) goto function_end;
+
+        final = select_geometry(selection, reference_center, box, parameters, system_box);
+        
+    }
+
+    function_end:
+    free(selection);
+    free(query);
+    free(split);
 
     return final;
 }

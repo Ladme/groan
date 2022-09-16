@@ -572,7 +572,6 @@ system_t *selection_to_system_d(
  * 
  * Atoms are selected relative to center. Use {0, 0, 0} as center for absolute reference.
  * 
- * 
  * @paragraph Supported geometries
  *      cylinder (xcylinder,ycylinder,zcylinder)
  *              > selects atoms inside a specified cylinder
@@ -619,14 +618,69 @@ atom_selection_t *select_geometry_d(
  * The selection returned by this function must ALWAYS be freed when it is not needed anymore.
  * This holds true even for selections originating from the ndx_groups dictionary (which you usually do not free separately).
  * 
+ * @paragraph 'ndx_groups' can be NULL
+ * If 'ndx_groups' is NULL, the ndx groups will not be used for selecting atoms but the parsing can still be successful
+ * (if the ndx groups are not needed to understand the query).
+ * 
  * @param selection             selection of atoms to choose from
  * @param query                 query to be parsed
- * @param ndx_groups            dictionary containing definitions of the ndx group (use read_ndx() to obtain it)
+ * @param ndx_groups            dictionary containing definitions of the ndx groups (use read_ndx() to obtain it)
  * 
  * @return Pointer to the atom selection. NULL in case the parsing fails. If query is NULL, returns copy of the input selection.
  * 
  */
 atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups);
+
+
+/*! @brief Select atoms based on the provided geometry query.
+ *
+ * @paragraph Groan selection language
+ * Use groan selection language for 'selection_query' and 'reference_query' (see https://github.com/Ladme/groan#groan-selection-language).
+ * 
+ * @paragraph Geometry query
+ * The geometry query has the following format: GEOMETRY_TYPE OPTIONS...
+ * The number and character of options depends on the GEOMETRY_TYPE. 
+ * > xcylinder/ycylinder/zcylinder 
+ *      >>> options: RADIUS MIN-MAX
+ *      >>> example: zcylinder 1.5 -3-3
+ * > sphere
+ *      >>> options: RADIUS
+ *      >>> example: sphere 3
+ * > box
+ *      >>> options: MINX-MAXX MINY-MAXY MINZ-MAXZ
+ *      >>> example: box -1-1 -2--1 0-4
+ * 
+ * @paragraph Specifying center
+ * The cylinder, sphere, or box used for geometry selection is placed to the center of geometry of reference atoms specified by 'reference_query'.
+ * In case the 'reference_query' is NULL, a reference point in box origin {0, 0, 0} is used.
+ * The 'reference_query' can also start with 'point' in which case the supplied reference point will be used.
+ * For example, using "point 3.5 4.2 1.1" will place the reference point to x = 3.5 nm, y = 4.2 nm, z = 1.1 nm.
+ * 
+ * @paragraph NULL parameters
+ * In case the 'input selection' is NULL, the function returns NULL.
+ * In case the 'selection_query' is NULL, the entire input_selection is used for geometry selection.
+ * In case the 'reference_query' is NULL, the box origin is used as a reference point for the geometry selection.
+ * In case the 'geometry query' is NULL, the entire selection specified by 'selection_query' is returned.
+ * In case the 'ndx_groups' is NULL, ndx groups will not be used for selecting atoms (see smart_select()).
+ * In case the 'system_box' is NULL, the function returns NULL.
+ * 
+ * @param input_selection       selection of atoms to be used by the function
+ * @param selection_query       query to specify atoms to use for geometry selection
+ * @param reference_query       query to specify reference atoms
+ * @param geometry_query        query to specify geometry to use for sleection
+ * @param ndx_groups            dictionary containing definitions of the ndx groups (use read_ndx() to obtain it)
+ * @param system_box            dimensions of the simulation box (get as system->box)
+ * 
+ * @return Pointer to atom selection specified by selection_query and geometry_query. NULL in case the parsing fails.
+ * 
+ */
+atom_selection_t *smart_geometry(
+        atom_selection_t *input_selection,
+        const char *selection_query, 
+        const char *reference_query,
+        const char *geometry_query,
+        dict_t *ndx_groups,
+        box_t system_box);
 
 
 /*! @brief Reads an ndx file creating atom selection for each index group.

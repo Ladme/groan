@@ -2363,6 +2363,265 @@ static void test_smart_select_parentheses_fails(void)
     printf("OK\n");
 }
 
+static void test_smart_geometry(void)
+{
+    printf("%-40s", "smart_geometry ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    select_t *protein = smart_select(all, "Protein", ndx_groups);
+
+    // selecting xcylinder
+    vec_t centerx = {0., 0., 0.};
+    float optionsx[3] = {2.0, -1.1, 1.3};
+    select_t *pope = smart_select(all, "resname POPE", NULL);
+    select_t *xcylinder_abs_manual = select_geometry(pope, centerx, xcylinder, optionsx, system->box);
+
+    center_of_geometry(protein, centerx, system->box);
+    select_t *xcylinder_manual = select_geometry(pope, centerx, xcylinder, optionsx, system->box);
+
+    select_t *xcylinder_abs = smart_geometry(all, "resname POPE", NULL, "xcylinder 2 -1.1-1.3   ", NULL, system->box);
+    select_t *xcylinder = smart_geometry(all, "resname POPE", "Protein", "xcylinder 2 -1.1-1.3    ", ndx_groups, system->box);
+    assert(xcylinder_abs);
+    assert(xcylinder);
+    assert(selection_compare_strict(xcylinder_abs_manual, xcylinder_abs));
+    assert(selection_compare_strict(xcylinder_manual, xcylinder));
+
+    free(pope);
+    free(xcylinder_abs_manual);
+    free(xcylinder_manual);
+    free(xcylinder_abs);
+    free(xcylinder);
+    
+    // selecting ycylinder
+    vec_t centery = {0., 0., 0.};
+    float optionsy[3] = {13.0, -0.5, 1.4};
+    select_t *popg = smart_select(all, "resname POPG", NULL);
+    select_t *ycylinder_abs_manual = select_geometry(popg, centery, ycylinder, optionsy, system->box);
+
+    center_of_geometry(protein, centery, system->box);
+    select_t *ycylinder_manual = select_geometry(popg, centery, ycylinder, optionsy, system->box);
+
+    select_t *ycylinder_abs = smart_geometry(all, "resname POPG", NULL, "ycylinder 13.0 -0.5-1.4     ", NULL, system->box);
+    select_t *ycylinder = smart_geometry(all, "resname POPG", "Protein", "ycylinder 13.0 -0.5-1.4", ndx_groups, system->box);
+    assert(ycylinder_abs);
+    assert(ycylinder);
+    assert(selection_compare_strict(ycylinder_abs_manual, ycylinder_abs));
+    assert(selection_compare_strict(ycylinder_manual, ycylinder));
+
+    free(popg);
+    free(ycylinder_abs_manual);
+    free(ycylinder_manual);
+    free(ycylinder_abs);
+    free(ycylinder);
+
+    // selecting zcylinder
+    vec_t centerz = {0., 0., 0.};
+    float optionsz[3] = {2.3, 0.7, 4.9};
+    select_t *water = smart_select(all, "Water", ndx_groups);
+    select_t *zcylinder_abs_manual = select_geometry(water, centerz, zcylinder, optionsz, system->box);
+
+    center_of_geometry(protein, centerz, system->box);
+    select_t *zcylinder_manual = select_geometry(water, centerz, zcylinder, optionsz, system->box);
+
+    select_t *zcylinder_abs = smart_geometry(all, "Water", NULL, "    zcylinder 2.3 0.7-4.9", ndx_groups, system->box);
+    select_t *zcylinder = smart_geometry(all, "resname SOL", "Protein", "zcylinder    2.3    0.7-4.9", ndx_groups, system->box);
+    assert(zcylinder_abs);
+    assert(zcylinder);
+    assert(selection_compare_strict(zcylinder_abs_manual, zcylinder_abs));
+    assert(selection_compare_strict(zcylinder_manual, zcylinder));
+
+    free(water);
+    free(zcylinder_abs_manual);
+    free(zcylinder_manual);
+    free(zcylinder_abs);
+    free(zcylinder);
+
+    // selecting sphere
+    vec_t center_sphere = {0., 0., 0.};
+    float options_sphere = {4.23};
+    select_t *membrane = smart_select(all, "Membrane", ndx_groups);
+    select_t *sphere_abs_manual = select_geometry(membrane, center_sphere, sphere, &options_sphere, system->box);
+
+    center_sphere[0] = 2.4;
+    center_sphere[1] = 3.1;
+    center_sphere[2] = 7.3;
+    select_t *sphere_point_manual = select_geometry(membrane, center_sphere, sphere, &options_sphere, system->box);
+    select_t *sphere_point = smart_geometry(all, "Membrane", "point   2.4 3.1       7.3", "sphere 4.23", ndx_groups, system->box);
+
+    center_of_geometry(protein, center_sphere, system->box);
+    select_t *sphere_manual = select_geometry(membrane, center_sphere, sphere, &options_sphere, system->box);
+
+    select_t *sphere_abs = smart_geometry(all, "Membrane", NULL, "sphere 4.23", ndx_groups, system->box);
+    select_t *sphere = smart_geometry(all, "Membrane", "Protein", "   sphere 4.23", ndx_groups, system->box);
+    assert(sphere_abs);
+    assert(sphere);
+    assert(sphere_point);
+    assert(selection_compare_strict(sphere_abs_manual, sphere_abs));
+    assert(selection_compare_strict(sphere_manual, sphere));
+    assert(selection_compare_strict(sphere_point_manual, sphere_point));
+
+    free(membrane);
+    free(sphere_abs_manual);
+    free(sphere_manual);
+    free(sphere_abs);
+    free(sphere);
+    free(sphere_point_manual);
+    free(sphere_point);
+
+    // selecting box
+    vec_t center_box = {0., 0., 0.};
+    float options_box[6] = {-4, 4, -1.5, 2, -3.2, 2.2};
+    select_t *wion = smart_select(all, "W_ION", ndx_groups);
+    select_t *box_abs_manual = select_geometry(wion, center_box, box, options_box, system->box);
+
+    center_of_geometry(protein, center_box, system->box);
+    select_t *box_manual = select_geometry(wion, center_box, box, options_box, system->box);
+
+    select_t *box_abs = smart_geometry(all, "W_ION", NULL, "box -4-4 -1.5-2 -3.2-2.2", ndx_groups, system->box);
+    select_t *box = smart_geometry(all, "W_ION", "Protein", "box    -4-4   -1.5-2 -3.2-2.2   ", ndx_groups, system->box);
+    assert(box_abs);
+    assert(box);
+    assert(selection_compare_strict(box_abs_manual, box_abs));
+    assert(selection_compare_strict(box_manual, box));
+
+    free(wion);
+    free(box_abs_manual);
+    free(box_manual);
+    free(box_abs);
+    free(box);
+
+    free(system);
+    free(all);
+    free(protein);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
+
+static void test_smart_geometry_null(void)
+{
+    printf("%-40s", "smart_geometry (fail & null) ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    // no input selection provided
+    select_t *selection1 = smart_geometry(NULL, "resname POPC", "name CA", "sphere 3.2", ndx_groups, system->box);
+    assert(!selection1);
+    
+    // no selection query provided
+    vec_t center = {0.};
+    float radius = 3.2;
+    select_t *ca = smart_select(all, "name CA", ndx_groups);
+    center_of_geometry(ca, center, system->box);
+    select_t *selection2_manual = select_geometry(all, center, sphere, &radius, system->box);
+    select_t *selection2 = smart_geometry(all, NULL, "name CA", "sphere 3.2", ndx_groups, system->box);
+    assert(selection2);
+    assert(selection_compare_strict(selection2_manual, selection2));
+    free(ca);
+    free(selection2);
+    free(selection2_manual);
+
+    // no geometry query provided
+    select_t *popc = smart_select(all, "resname POPC", ndx_groups);
+    select_t *selection3 = smart_geometry(all, "resname POPC", "name CA", NULL, ndx_groups, system->box);
+    assert(selection3);
+    assert(selection_compare_strict(popc, selection3));
+    free(popc);
+    free(selection3);
+
+    // no selection and geometry query provided
+    select_t *selection4 = smart_geometry(all, NULL, "name CA", NULL, ndx_groups, system->box);
+    assert(selection4);
+    assert(selection_compare_strict(all, selection4));
+    free(selection4);
+
+    // no selection, reference query, and geometry query provided
+    select_t *selection5 = smart_geometry(all, NULL, NULL, NULL, ndx_groups, system->box);
+    select_t *selection5_b = smart_geometry(all, NULL, NULL, NULL, NULL, system->box);
+    assert(selection5);
+    assert(selection5_b);
+    assert(selection_compare_strict(all, selection5));
+    assert(selection_compare_strict(all, selection5_b));
+    free(selection5);
+    free(selection5_b);
+    
+    // no box
+    select_t *selection6 = smart_geometry(all, "resname POPC", "name CA", "sphere 3.2", ndx_groups, NULL);
+    assert(!selection6);
+
+    // failed selection query
+    select_t *selection_f1 = smart_geometry(all, "resn POPC", "name CA", "sphere 3.2", ndx_groups, system->box);
+    assert(!selection_f1);
+    select_t *selection_f2 = smart_geometry(all, "Membrane", "name CA", "sphere 3.2", NULL, system->box);
+    assert(!selection_f2);
+    
+    // failed reference query
+    select_t *selection_f3 = smart_geometry(all, "resname POPC", "ame CA", "sphere 3.2", ndx_groups, system->box);
+    assert(!selection_f3);
+    select_t *selection_f4 = smart_geometry(all, "resname POPC", "Protein", "sphere 3.2", NULL, system->box);
+    assert(!selection_f4);
+    select_t *selection_f5 = smart_geometry(all, "resname POPC", "name XYZ", "sphere 3.2", ndx_groups, system->box);
+    assert(!selection_f5);
+
+    // failed cylinder query
+    select_t *selection_f6 = smart_geometry(all, "resname POPC", "Protein", "xcylinder 4.2 5-.", ndx_groups, system->box);
+    select_t *selection_f7 = smart_geometry(all, "resname POPC", "Protein", "ycylinder 4.2 3.2", ndx_groups, system->box);
+    select_t *selection_f8 = smart_geometry(all, "resname POPC", "Protein", "zcylinder 4.2", ndx_groups, system->box);
+    select_t *selection_f9 = smart_geometry(all, "resname POPC", "Protein", "xcylinder", ndx_groups, system->box);
+    select_t *selection_f10 = smart_geometry(all, "resname POPC", "Protein", "cylinder", ndx_groups, system->box);
+    select_t *selection_f11 = smart_geometry(all, "resname POPC", "Protein", "zcylinder 4.2 3.3-4 9.2", ndx_groups, system->box);
+    assert(!selection_f6);
+    assert(!selection_f7);
+    assert(!selection_f8);
+    assert(!selection_f9);
+    assert(!selection_f10);
+    assert(!selection_f11);
+
+    // failed sphere query
+    select_t *selection_f12 = smart_geometry(all, "resname POPC", "Protein", "sphere", ndx_groups, system->box);
+    //select_t *selection_f13 = smart_geometry(all, "resname POPC", "Protein", "sphere 2-3", ndx_groups, system->box);
+    select_t *selection_f14 = smart_geometry(all, "resname POPC", "Protein", "sphere 4.2 1.8", ndx_groups, system->box);
+    assert(!selection_f12);
+    //assert(!selection_f13);
+    assert(!selection_f14);
+
+    // failed box query
+    select_t *selection_f15 = smart_geometry(all, "resname POPC", "Protein", "box", ndx_groups, system->box);
+    select_t *selection_f16 = smart_geometry(all, "resname POPC", "Protein", "box -3--2", ndx_groups, system->box);
+    select_t *selection_f17 = smart_geometry(all, "resname POPC", "Protein", "box -3-2 2-3", ndx_groups, system->box);
+    select_t *selection_f18 = smart_geometry(all, "resname POPC", "Protein", "box -3-2 2-3 4-5 4-6", ndx_groups, system->box);
+    select_t *selection_f19 = smart_geometry(all, "resname POPC", "Protein", "box 4-5 5 7", ndx_groups, system->box);
+    assert(!selection_f15);
+    assert(!selection_f16);
+    assert(!selection_f17);
+    assert(!selection_f18);
+    assert(!selection_f19);
+
+    // failed reference query point
+    select_t *selection_f20 = smart_geometry(all, "resname POPC", "point", "sphere 3.2", ndx_groups, system->box);
+    select_t *selection_f21 = smart_geometry(all, "resname POPC", "point 2.2", "sphere 3.2", ndx_groups, system->box);
+    select_t *selection_f22 = smart_geometry(all, "resname POPC", "point 2.2 -4.3", "sphere 3.2", ndx_groups, system->box);
+    select_t *selection_f23 = smart_geometry(all, "resname POPC", "point 2.2 4.3 5.1 0.7", "sphere 3.2", ndx_groups, system->box);
+    //select_t *selection_f24 = smart_geometry(all, "resname POPC", "point 2.2-4.5 7.0 1.3", "sphere 3.2", ndx_groups, system->box);
+    select_t *selection_f25 = smart_geometry(all, "resname POPC", "point 1 2 F", "sphere 3.2", ndx_groups, system->box);
+    assert(!selection_f20);
+    assert(!selection_f21);
+    assert(!selection_f22);
+    assert(!selection_f23);
+    //assert(!selection_f24);
+    assert(!selection_f25);
+
+
+    free(system);
+    free(all);
+    dict_destroy(ndx_groups);
+    printf("OK\n");
+}
+
 void test_selection(void)
 {
     test_strsplit_space();
@@ -2459,5 +2718,8 @@ void test_selection(void)
     test_smart_select_advanced_fails();
     test_smart_select_parentheses();
     test_smart_select_parentheses_fails();
+
+    test_smart_geometry();
+    test_smart_geometry_null();
     
 }
