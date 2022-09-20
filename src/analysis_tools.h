@@ -117,4 +117,39 @@ int center_of_geometry_naive(const atom_selection_t *selection, vec_t center);
  */
 void selection_translate(atom_selection_t *selection,  vec_t trans, box_t box);
 
+
+/*! @brief Rotates a point around specified axis and origin counterclockwise.
+ *
+ * 
+ * @param point                 position of the point in the xyz coordinate system
+ * @param origin                position of the origin
+ * @param axis                  axis to rotate the point around (x/y/z)
+ * @param theta                 rotation around the axis
+ *
+ */
+void rotate_point(vec_t point, const vec_t origin, const float theta, const dimension_t axis);
+
+
+/*! @brief Rotates all atoms of selection around specified origin counterclockwise. Handles rectangular PBC.
+ *
+ * @param selection             selection of atoms to be rotated
+ * @param origin                position of the origin
+ * @param axis                  axis to rotate the point around (x/y/z)
+ * @param theta                 rotation around the axis
+ * @param box                   simulation box size
+ *
+ */
+void selection_rotate(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis, box_t box);
+
+
+/*! @brief Rotates all atoms of selection around specified origin counterclockwise. Does NOT wrap coordinates into the simulation box.
+ *
+ * @param selection             selection of atoms to be rotated
+ * @param origin                position of the origin
+ * @param axis                  axis to rotate the point around (x/y/z)
+ * @param theta                 rotation around the axis
+ *
+ */
+void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis);
+
 #endif /* ANALYSIS_TOOLS_H */

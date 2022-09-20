@@ -194,3 +194,48 @@ void selection_translate(atom_selection_t *selection, vec_t trans, box_t box)
         wrap_coordinate(&atom->position[2], box[2]);
     }
 }
+
+void rotate_point(vec_t point, const vec_t origin, const float theta, const dimension_t axis)
+{   
+    float theta_rad = theta * (M_PI / 180.0);
+    float dx, dy, dz;
+
+    if (axis == x) {
+        dy = point[1] - origin[1];
+        dz = point[2] - origin[2];
+        point[1] =  dy * cosf(theta_rad) - dz * sinf(theta_rad) + origin[1];
+        point[2] =  dy * sinf(theta_rad) + dz * cosf(theta_rad) + origin[2];
+    } else if (axis == y) {
+        dx = point[0] - origin[0];
+        dz = point[2] - origin[2];
+        point[0] =  dx * cosf(theta_rad)  - dz * sinf(theta_rad)  + origin[0];
+        point[2] =  dx * sinf(theta_rad)  + dz * cosf(theta_rad)  + origin[2];
+    } else {
+        dx = point[0] - origin[0];
+        dy = point[1] - origin[1];
+        point[0] =  dx * cosf(theta_rad) - dy * sinf(theta_rad) + origin[0];
+        point[1] =  dx * sinf(theta_rad) + dy * cosf(theta_rad) + origin[1];
+    }
+}
+
+void selection_rotate(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis, box_t box)
+{
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        atom_t *atom = selection->atoms[i];
+
+        rotate_point(atom->position, origin, theta, axis);
+        wrap_coordinate(&atom->position[0], box[0]);
+        wrap_coordinate(&atom->position[1], box[1]);
+        wrap_coordinate(&atom->position[2], box[2]);
+    }
+}
+
+void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis)
+{
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        atom_t *atom = selection->atoms[i];
+
+        rotate_point(atom->position, origin, theta, axis);
+    }
+
+}

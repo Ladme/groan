@@ -549,6 +549,124 @@ void test_center_of_geometry_naive(void)
     printf("OK\n");
 }
 
+void test_rotate_point(void)
+{
+    printf("%-40s", "rotate_point ");
+
+    vec_t reference = {2.0, 1.0, 3.0};
+
+    // rotation around the x axis
+    vec_t point_rx = {4.0, 3.0, 2.0};
+    rotate_point(point_rx, reference, 44, x);
+
+    assert(closef(point_rx[0], 4.0000, 0.0001));
+    assert(closef(point_rx[1], 3.1333, 0.0001));
+    assert(closef(point_rx[2], 3.6699, 0.0001));
+
+    // rotation around the y axis
+    vec_t point_ry = {4.0, 3.0, 2.0};
+    rotate_point(point_ry, reference, 63, y);
+
+    assert(closef(point_ry[0], 3.7989, 0.0001));
+    assert(closef(point_ry[1], 3.0000, 0.0001));
+    assert(closef(point_ry[2], 4.3280, 0.0001));
+
+    // rotation around the z axis
+    vec_t point_rz = {4.0, 3.0, 2.0};
+    rotate_point(point_rz, reference, -17, z);
+
+    assert(closef(point_rz[0], 4.4973, 0.0001));
+    assert(closef(point_rz[1], 2.3278, 0.0001));
+    assert(closef(point_rz[2], 2.0000, 0.0001));
+
+    printf("OK\n");
+}
+
+void test_selection_rotate_naive(void)
+{
+    printf("%-40s", "selection_rotate_naive ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    system_t *new_system = selection_to_system(all, system->box, system->step, system->time);
+    select_t *new_all = select_system(new_system);
+
+    vec_t origin1 = {2.4, 3.2, 1.8};
+    vec_t origin2 = {1.8, 3.1, -1.4};
+    selection_rotate_naive(new_all, origin1, 543, x);
+    selection_rotate_naive(new_all, origin2, 13, y);
+    selection_rotate_naive(new_all, origin1, -32, z);
+
+    for (size_t i = 0; i < new_all->n_atoms; ++i) {
+        vec_t opos = {all->atoms[i]->position[0], 
+                      all->atoms[i]->position[1],
+                      all->atoms[i]->position[2]};
+
+        rotate_point(opos, origin1, 543, x);
+        rotate_point(opos, origin2, 13, y);
+        rotate_point(opos, origin1, -32, z);
+        
+        assert(closef(opos[0], new_all->atoms[i]->position[0], 0.000001));
+        assert(closef(opos[1], new_all->atoms[i]->position[1], 0.000001));
+        assert(closef(opos[2], new_all->atoms[i]->position[2], 0.000001));
+    }
+
+
+    free(system);
+    free(all);
+    free(new_system);
+    free(new_all);
+    printf("OK\n");
+}
+
+void test_selection_rotate(void)
+{
+    printf("%-40s", "selection_rotate ");
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    system_t *new_system = selection_to_system(all, system->box, system->step, system->time);
+    select_t *new_all = select_system(new_system);
+
+    vec_t origin1 = {2.4, 3.2, 1.8};
+    vec_t origin2 = {1.8, 3.1, -1.4};
+    selection_rotate(new_all, origin1, 543, x, system->box);
+    selection_rotate(new_all, origin2, 13, y, system->box);
+    selection_rotate(new_all, origin1, -32, z, system->box);
+
+    for (size_t i = 0; i < new_all->n_atoms; ++i) {
+        vec_t opos = {all->atoms[i]->position[0], 
+                      all->atoms[i]->position[1],
+                      all->atoms[i]->position[2]};
+
+        rotate_point(opos, origin1, 543, x);
+        wrap_coordinate(&opos[0], system->box[0]);
+        wrap_coordinate(&opos[1], system->box[1]);
+        wrap_coordinate(&opos[2], system->box[2]);
+        rotate_point(opos, origin2, 13, y);
+        wrap_coordinate(&opos[0], system->box[0]);
+        wrap_coordinate(&opos[1], system->box[1]);
+        wrap_coordinate(&opos[2], system->box[2]);
+        rotate_point(opos, origin1, -32, z);
+        wrap_coordinate(&opos[0], system->box[0]);
+        wrap_coordinate(&opos[1], system->box[1]);
+        wrap_coordinate(&opos[2], system->box[2]);
+        
+        assert(closef(opos[0], new_all->atoms[i]->position[0], 0.000001));
+        assert(closef(opos[1], new_all->atoms[i]->position[1], 0.000001));
+        assert(closef(opos[2], new_all->atoms[i]->position[2], 0.000001));
+    }
+
+
+    free(system);
+    free(all);
+    free(new_system);
+    free(new_all);
+    printf("OK\n");
+}
+
 
 void test_analysis_tools(void)
 {
@@ -566,4 +684,8 @@ void test_analysis_tools(void)
     test_center_of_geometry();
     test_center_of_geometry_translated();
     test_center_of_geometry_naive();
+
+    test_rotate_point();
+    test_selection_rotate_naive();
+    test_selection_rotate();
 }
