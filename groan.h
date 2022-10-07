@@ -8,6 +8,7 @@
 
 #include "src/gro_io.h"
 #include "src/xtc_io.h"
+#include "src/trr_io.h"
 #include "src/analysis_tools.h"
 #include "src/selection.h"
 

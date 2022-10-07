@@ -28,6 +28,7 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 - [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
 - [com](https://github.com/Ladme/com): calculate center of geometry of a selection of atoms
 - [contact](https://github.com/Ladme/contact): calculate contact matrix for selected atoms
+- [cylinder](https://github.com/Ladme/cylinder): calculate density of atoms inside a cylinder
 - [distance](https://github.com/Ladme/distance): calculate distances between atoms or groups of atoms
 - [gndx](https://github.com/Ladme/gndx): create an ndx group from a selection using groan selection language
 - [gselect](https://github.com/Ladme/gselect): select a group of atoms using groan selection language

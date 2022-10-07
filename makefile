@@ -1,5 +1,5 @@
-groan: src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/list.o src/dict.o src/gro_io.o src/xtc_io.o src/analysis_tools.o src/vector.o src/selection.o
-	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/dyn_array.o src/list.o src/dict.o src/gro_io.o src/xtc_io.o src/vector.o src/selection.o src/analysis_tools.o
+groan: src/xdrfile.o src/xdrfile_xtc.o src/xdrfile_trr.o src/dyn_array.o src/list.o src/dict.o src/gro_io.o src/xtc_io.o src/trr_io.o src/analysis_tools.o src/vector.o src/selection.o
+	ar -rcs libgroan.a src/xdrfile.o src/xdrfile_xtc.o src/xdrfile_trr.o src/dyn_array.o src/list.o src/dict.o src/gro_io.o src/xtc_io.o src/trr_io.o src/vector.o src/selection.o src/analysis_tools.o
 	make tests
 
 src/xdrfile.o: src/xdrfile/xdrfile.c
@@ -7,6 +7,9 @@ src/xdrfile.o: src/xdrfile/xdrfile.c
 
 src/xdrfile_xtc.o: src/xdrfile/xdrfile_xtc.c
 	gcc -c src/xdrfile/xdrfile_xtc.c -o src/xdrfile_xtc.o -std=c99 -pedantic -Wall -O3 -march=native
+
+src/xdrfile_trr.o: src/xdrfile/xdrfile_trr.c
+	gcc -c src/xdrfile/xdrfile_trr.c -o src/xdrfile_trr.o -std=c99 -pedantic -Wall -O3 -march=native
 
 src/dyn_array.o: src/general_structs/dyn_array.c
 	gcc -c src/general_structs/dyn_array.c -o src/dyn_array.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native
@@ -25,6 +28,9 @@ src/gro_io.o: src/gro_io.c
 
 src/xtc_io.o: src/xtc_io.c
 	gcc -c src/xtc_io.c -o src/xtc_io.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native
+
+src/trr_io.o: src/trr_io.c
+	gcc -c src/trr_io.c -o src/trr_io.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native
 
 src/selection.o: src/selection.c
 	gcc -c src/selection.c -o src/selection.o -std=c99 -pedantic -Wall -Wextra -O3 -march=native

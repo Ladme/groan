@@ -29,6 +29,7 @@ typedef struct atom {
     size_t gmx_atom_number;    /* this is an atom number as gromacs uses it */
     vec_t position;
     vec_t velocity;
+    vec_t force;
 } atom_t;
 
 /*
@@ -40,6 +41,7 @@ typedef struct system {
     int step;            /* simulation step; we use int only because the xdrfile library uses int */
     float time;          /* simulation time in ps */
     float precision;     /* input precision of positions*/
+    float lambda;        /* gromacs lambda value */
     size_t n_atoms;      /* number of atoms in the system */
     atom_t atoms[];      /* array of atoms in the system */
 } system_t;
