@@ -44,5 +44,5 @@ clean:
 example: examples/example.c
 	gcc examples/example.c -L. -I. -lgroan -lm -std=c99 -pedantic -Wall -Wextra -DCREATEEXAMPLE -o examples/example
 
-tests: tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c libgroan.a groan.h
-	gcc tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c -L. -I. -lgroan -lm -g -std=c99 -pedantic -Wall -Wextra -O3 -march=native -o tests/tests
+tests: tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c tests/xdr_tests.c libgroan.a groan.h
+	gcc tests/tests.c tests/selection_tests.c tests/analysis_tools_tests.c tests/xdr_tests.c -L. -I. -lgroan -lm -g -std=c99 -pedantic -Wall -Wextra -O3 -march=native -o tests/tests

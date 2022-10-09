@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -431,7 +432,7 @@ static int do_trn(XDRFILE *xd,mybool bRead,int *step,float *t,float *lambda,
     int result;
   
     sh = (t_trnheader *)calloc(1,sizeof(*sh));
-  
+
     if (!bRead) {
         sh->box_size = (NULL != box) ? sizeof(matrix):0;
         sh->x_size   = ((NULL != x) ? (*natoms*sizeof(x[0])):0);
@@ -445,16 +446,21 @@ static int do_trn(XDRFILE *xd,mybool bRead,int *step,float *t,float *lambda,
         sh->tf      = *t;
         sh->lambdaf = *lambda;
     }
-    if ((result = do_trnheader(xd,bRead,sh)) != exdrOK)
+    if ((result = do_trnheader(xd,bRead,sh)) != exdrOK) {
+        free(sh);
         return result;
+    }
+        
     if (bRead) {
         *natoms = sh->natoms;
         *step   = sh->step;
         *t      = sh->td;
         *lambda = sh->lambdad;
     }
-    if ((result = do_htrn(xd,bRead,sh,box,x,v,f)) != exdrOK)
+    if ((result = do_htrn(xd,bRead,sh,box,x,v,f)) != exdrOK) {
+        free(sh);
         return result;
+    }
 
     free(sh);
   

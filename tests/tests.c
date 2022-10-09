@@ -1,4 +1,3 @@
-
 // Released under MIT License.
 // Copyright (c) 2022 Ladislav Bartos
 
@@ -12,11 +11,14 @@ int main(int argc, char **argv)
                 test_selection();
             } else if (!strcmp(argv[i], "tools")) {
                 test_analysis_tools();
+            } else if (!strcmp(argv[i], "xtc") || !strcmp(argv[i], "trr") || !strcmp(argv[i], "xdr")) {
+                test_xdr();
             }
         }   
     } else {
         test_selection();
         test_analysis_tools();
+        test_xdr();
     }
     
     return 0;

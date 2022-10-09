@@ -8,10 +8,10 @@ int read_trr_step(XDRFILE *trr, system_t *system)
     float box[3][3] = {0};
 
     // allocate memory for a arrays of coordinates, velocities and forces
-    // this is a 2D array of [n_atoms][3] floats
-    vec_t *coordinates = malloc(system->n_atoms * sizeof(vec_t));
-    vec_t *velocities = malloc(system->n_atoms * sizeof(vec_t));
-    vec_t *forces = malloc(system->n_atoms * sizeof(vec_t));
+    // these are 2D arrays of [n_atoms][3] floats
+    vec_t *coordinates = calloc(system->n_atoms, sizeof(vec_t));
+    vec_t *velocities  = calloc(system->n_atoms, sizeof(vec_t));
+    vec_t *forces      = calloc(system->n_atoms, sizeof(vec_t));
 
     // read trr step using the xdrfile library
     if (read_trr(trr, system->n_atoms, &(system->step), &(system->time), &(system->lambda), box, coordinates, velocities, forces) != 0) {

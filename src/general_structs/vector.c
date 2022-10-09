@@ -30,3 +30,8 @@ void vec_div(vec_t result, const float scalar)
     result[1] /= scalar;
     result[2] /= scalar;
 }
+
+float vec_len(const vec_t vec)
+{
+    return sqrtf(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+}

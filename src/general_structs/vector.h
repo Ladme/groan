@@ -4,6 +4,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <math.h>
+
 /*! @brief An array of three floats. */
 typedef float vec_t[3];
 
@@ -38,5 +40,13 @@ void vec_mul(vec_t result, const float scalar);
  *
  */
 void vec_div(vec_t result, const float scalar);
+
+/*! @brief Calculates the length of a vector.
+ *
+ * @param vec       vector which length shall be calculated
+ *
+ * @return Length of the vector.
+ */
+float vec_len(const vec_t vec);
 
 #endif /* VECTOR_H */

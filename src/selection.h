@@ -314,7 +314,8 @@ size_t selection_remove_atom(atom_selection_t *selection, atom_t *remove);
  */ 
 size_t selection_remove_legacy(atom_selection_t *selection_result, const atom_selection_t *selection_sub);
 
-/*! @brief Removes atoms which are part of selection_sub from selection_result. Legacy version: DO NOT USE.
+
+/*! @brief Removes atoms which are part of selection_sub from selection_result.
  *
  * @paragraph Details
  * The amount of memory allocated to any selection is not changed by this function.
@@ -700,9 +701,8 @@ atom_selection_t *smart_geometry(
  * should NOT be freed separately.
  * 
  * @paragraph On checking sanity of the input
- * Note that the function does NOT check whether all atoms are assigned to at least one index group
- * and it also does NOT check whether a group contains multiple identical atoms.
- * The function however DOES raise error, if it encounters an atom with an unknown atom number.
+ * Note that the function does NOT check whether a group contains multiple identical atoms.
+ * The function however DOES raise error (returns NULL), if it encounters an atom with an unknown atom number.
  * You can remove any duplicate atoms afterwards by applying selection_unique() to the individual atom selections.
  * 
  * @paragraph On atom sorting
