@@ -108,6 +108,14 @@ int parse_gro_line(const char *line, atom_t *atom);
  * the atom numbers based on the real number of atoms.
  * To also capture this information in groan, we therefore introduce gmx_atom_number
  * to the atom_t structure which can be >99,999.
+ * 
+ * @paragraph Note on incosistencies in the gro file format
+ * Note that some older version of Gromacs tools do not always properly
+ * follow the gro file format. For instance, in gromacs v5, if gmx trjconv
+ * is used to split trajectory saved in an xtc file with precision < 1000,
+ * the coordinates in the gro file are only printed with 2 decimals, instead of 3.
+ * In such cases, groan library will fail as it can't be equipped to handle cases
+ * in which Gromacs developers do not follow their own standard.
  *
  * @param filename  path to the gro file
  * 
