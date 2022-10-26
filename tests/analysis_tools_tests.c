@@ -13,6 +13,7 @@ static inline void wrap_coordinate(float *x, const float dimension)
 void test_distance1D(void)
 {
     printf("%-40s", "distance1D ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -44,6 +45,7 @@ void test_distance1D(void)
 void test_distance2D(void)
 {
     printf("%-40s", "distance2D ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -88,6 +90,7 @@ void test_distance2D(void)
 void test_distance2D_naive(void)
 {
     printf("%-40s", "distance2D_naive ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -132,6 +135,7 @@ void test_distance2D_naive(void)
 void test_distance3D(void)
 {
     printf("%-40s", "distance3D ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -163,6 +167,7 @@ void test_distance3D(void)
 void test_distance3D_naive(void)
 {
     printf("%-40s", "distance3D_naive ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -194,6 +199,7 @@ void test_distance3D_naive(void)
 void test_vector_artificial(void)
 {
     printf("%-40s", "calc_vector (artificial) ");
+    fflush(stdout);
 
     // no minimum image convention
     vec_t particle1 = {4., 4., 5.};
@@ -268,6 +274,7 @@ void test_vector_artificial(void)
 void test_vector_system(void)
 {
     printf("%-40s", "calc_vector (system) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -320,6 +327,7 @@ void test_vector_system(void)
 void test_selection_translate(void)
 {
     printf("%-40s", "selection_translate ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -414,6 +422,7 @@ void test_selection_translate(void)
 void test_center_of_geometry(void)
 {
     printf("%-40s", "center_of_geometry ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -456,6 +465,7 @@ void test_center_of_geometry(void)
 void test_center_of_geometry_translated(void)
 {
     printf("%-40s", "center_of_geometry (translated) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -510,6 +520,7 @@ void test_center_of_geometry_translated(void)
 void test_center_of_geometry_naive(void)
 {
     printf("%-40s", "center_of_geometry_naive ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -552,6 +563,7 @@ void test_center_of_geometry_naive(void)
 void test_rotate_point(void)
 {
     printf("%-40s", "rotate_point ");
+    fflush(stdout);
 
     vec_t reference = {2.0, 1.0, 3.0};
 
@@ -585,6 +597,7 @@ void test_rotate_point(void)
 void test_selection_rotate_naive(void)
 {
     printf("%-40s", "selection_rotate_naive ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -623,6 +636,7 @@ void test_selection_rotate_naive(void)
 void test_selection_rotate(void)
 {
     printf("%-40s", "selection_rotate ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -667,6 +681,30 @@ void test_selection_rotate(void)
     printf("OK\n");
 }
 
+void test_calc_angle(void)
+{
+    printf("%-40s", "calc_angle ");
+    fflush(stdout);
+
+    vec_t vec1 = {5.0, 7.0, 3.0};
+    vec_t vec2 = {3.0, 4.0, 2.0};
+    assert(closef(calc_angle(vec1, vec2), 2.8618, 0.0001));
+
+    vec_t vec3 = {5.3, 7.1, 3.8};
+    vec_t vec4 = {3.1, 4.9, 2.1};
+    assert(closef(calc_angle(vec3, vec4), 5.2744, 0.0001));
+
+    vec_t vec5 = {4.2, -3.5, 6.0};
+    vec_t vec6 = {-2.0, 1.12, 4.7};
+    assert(closef(calc_angle(vec5, vec6), 68.0303, 0.0001));
+
+    vec_t vec7 = {1.0, 2.0, 5.0};
+    vec_t vec8 = {2.0, 4.0, 10.0};
+    assert(closef(calc_angle(vec7, vec8), 0.0000, 0.0001));
+
+    printf("OK\n");
+}
+
 
 void test_analysis_tools(void)
 {
@@ -688,4 +726,6 @@ void test_analysis_tools(void)
     test_rotate_point();
     test_selection_rotate_naive();
     test_selection_rotate();
+
+    test_calc_angle();
 }

@@ -3,9 +3,6 @@
 
 #include "analysis_tools.h"
 
-#define M_PI 3.141592f
-#define M_PI_X2 6.283184f
-
 /* Simple function wrapping a coordinate into a simulation box. */
 static inline void wrap_coordinate(float *x, const float dimension)
 {
@@ -238,4 +235,18 @@ void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, con
         rotate_point(atom->position, origin, theta, axis);
     }
 
+}
+
+float calc_angle(const vec_t vecA, const vec_t vecB)
+{
+    float dot = vecA[0] * vecB[0] + vecA[1] * vecB[1] + vecA[2] * vecB[2];
+
+    float cross_x = vecA[1] * vecB[2] - vecA[2] * vecB[1];
+    float cross_y = vecA[2] * vecB[0] - vecA[0] * vecB[2];
+    float cross_z = vecA[0] * vecB[1] - vecA[1] * vecB[0];
+
+    float det = sqrtf(cross_x * cross_x + cross_y * cross_y + cross_z * cross_z);
+    float angle = atan2f(det, dot);
+
+    return rad2deg(angle);
 }

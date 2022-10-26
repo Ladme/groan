@@ -15,6 +15,7 @@ static inline void wrap_coordinate(float *x, const float dimension)
 void test_box_xtc2gro(void)
 {
     printf("%-40s", "box_xtc2gro ");
+    fflush(stdout);
 
     float box[3][3] = {{13.43, 0.0, 0.0}, {0.0, 17.2, 0.0}, {0.0, 0.0, -3.465} };
 
@@ -32,6 +33,7 @@ void test_box_xtc2gro(void)
 void test_box_gro2xtc(void)
 {
     printf("%-40s", "box_gro2xtc ");
+    fflush(stdout);
 
     float box[3][3] = {{0.0}};
 
@@ -57,6 +59,7 @@ void test_box_gro2xtc(void)
 void test_reset_velocities(void)
 {
     printf("%-40s", "reset_velocities ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -83,6 +86,7 @@ void test_reset_velocities(void)
 void test_validate_xtc(void)
 {
     printf("%-40s", "validate_xtc ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     system_t *system2 = load_gro(SMALL_GRO_FILE);
@@ -98,6 +102,7 @@ void test_validate_xtc(void)
 void test_read_xtc_step_first(char *xtc_file)
 {
     printf("%-40s", "read_xtc_step (first frame) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -134,6 +139,7 @@ void test_read_xtc_step_first(char *xtc_file)
 void test_read_xtc_step_last(char *xtc_file)
 {
     printf("%-40s", "read_xtc_step (last frame) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -168,6 +174,7 @@ void test_read_xtc_step_last(char *xtc_file)
 void test_write_xtc_step_full(void)
 {
     printf("%-40s", "write_xtc_step (full)");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -196,6 +203,7 @@ void test_write_xtc_step_full(void)
 void test_validate_trr(void)
 {
     printf("%-40s", "validate_trr ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     system_t *system2 = load_gro(SMALL_GRO_FILE);
@@ -211,6 +219,7 @@ void test_validate_trr(void)
 void test_read_trr_step_first4(char *trr_file)
 {
     printf("%-40s", "read_trr_step (first 4 frames) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -325,6 +334,7 @@ void test_read_trr_step_first4(char *trr_file)
 void test_read_trr_step_last(char *trr_file)
 {
     printf("%-40s", "read_trr_step (last frame) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     XDRFILE *trr = xdrfile_open(trr_file, "r");
@@ -387,6 +397,7 @@ void test_read_trr_step_last(char *trr_file)
 void test_read_trr_step_compare(char *trr_file)
 {
     printf("%-40s", "read_trr_step (full, compare with xtc) ");
+    fflush(stdout);
 
     system_t *system_trr = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system_trr);
@@ -421,6 +432,7 @@ void test_read_trr_step_compare(char *trr_file)
 void test_write_trr_step_full(void)
 {
     printf("%-40s", "write_trr_step (full) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);

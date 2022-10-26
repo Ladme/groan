@@ -6,6 +6,7 @@
 static void test_strsplit_space(void)
 {
     printf("%-40s", "strsplit (space) ");
+    fflush(stdout);
 
     char string[1024] = "This is an example string that should be split.";
     char **array = NULL;
@@ -23,6 +24,7 @@ static void test_strsplit_space(void)
 static void test_strsplit_spacetab(void)
 {   
     printf("%-40s", "strsplit (spacetab) ");
+    fflush(stdout);
 
     char string[1024] = "This is    an example string   that should be  split.";
     char **array = NULL;
@@ -39,6 +41,7 @@ static void test_strsplit_spacetab(void)
 static void test_strstrip(void)
 {
     printf("%-40s", "strstrip ");
+    fflush(stdout);
 
     char string[1024] = "               Str\ning to st\nrip.         \n";
     strstrip(string);
@@ -50,6 +53,7 @@ static void test_strstrip(void)
 static void test_strstrip_zero(void)
 {
     printf("%-40s", "strstrip (zero) ");
+    fflush(stdout);
 
     char string[1024] = "";
     strstrip(string);
@@ -61,6 +65,7 @@ static void test_strstrip_zero(void)
 static void test_strstrip_white(void)
 {
     printf("%-40s", "strstrip (whiteonly) ");
+    fflush(stdout);
 
     char string[1024] = "    \n             \n  \n\n\n          ";
     strstrip(string);
@@ -72,6 +77,7 @@ static void test_strstrip_white(void)
 static void test_strremwhite(void)
 {
     printf("%-40s", "strremwhite ");
+    fflush(stdout);
 
     char string[1024] = "bla - g . \t haha\n xx";
     strremwhite(string);
@@ -83,6 +89,7 @@ static void test_strremwhite(void)
 static void test_strremwhite_white(void)
 {
     printf("%-40s", "strremwhite (whiteonly)");
+    fflush(stdout);
 
     char string[1024] = "   \t\n\n ";
     strremwhite(string);
@@ -94,6 +101,7 @@ static void test_strremwhite_white(void)
 static void test_load_gro(void)
 {
     printf("%-40s", "load_gro ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -150,6 +158,7 @@ static void test_load_gro(void)
 static void test_match_residue_name(void)
 {
     printf("%-40s", "match_residue_name ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -168,6 +177,7 @@ static void test_match_residue_name(void)
 static void test_match_residue_num(void)
 {
     printf("%-40s", "match_residue_num ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -186,6 +196,7 @@ static void test_match_residue_num(void)
 static void test_match_atom_name(void)
 {
     printf("%-40s", "match_atom_name ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -204,6 +215,7 @@ static void test_match_atom_name(void)
 static void test_match_atom_num(void)
 {
     printf("%-40s", "match_atom_num ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -222,6 +234,7 @@ static void test_match_atom_num(void)
 static void test_selection_create(void)
 {
     printf("%-40s", "selection_create ");
+    fflush(stdout);
 
     // we allocate enough memory to hold 10 atom pointers
     select_t *selection = selection_create(10);
@@ -242,6 +255,7 @@ static void test_selection_create(void)
 static void test_select_system(void)
 {
     printf("%-40s", "select_system ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *selection = select_system(system);
@@ -258,6 +272,7 @@ static void test_select_system(void)
 static void test_selection_copy(void)
 {
     printf("%-40s", "selection_copy ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *selection = select_system(system);
@@ -277,6 +292,7 @@ static void test_selection_copy(void)
 static void test_selection_empty(void)
 {
     printf("%-40s", "selection_empty ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *selection = select_system(system);
@@ -293,6 +309,7 @@ static void test_selection_empty(void)
 static void test_selection_add_atom(void)
 {
     printf("%-40s", "selection_add_atom ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
@@ -316,6 +333,7 @@ static void test_selection_add_atom(void)
 static void test_selection_add(void)
 {
     printf("%-40s", "selection_add ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -343,6 +361,7 @@ static void test_selection_add(void)
 static void test_select_atoms_atomname(void)
 {
     printf("%-40s", "select_atoms (atomname) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -362,6 +381,7 @@ static void test_select_atoms_atomname(void)
 static void test_select_atoms_atomname_multiple(void)
 {
     printf("%-40s", "select_atoms (atomname, multiple) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -381,6 +401,7 @@ static void test_select_atoms_atomname_multiple(void)
 static void test_select_atoms_atomname_empty(void)
 {
     printf("%-40s", "select_atoms (atomname, empty) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -398,6 +419,7 @@ static void test_select_atoms_atomname_empty(void)
 static void test_select_atoms_atomname_nomatch(void)
 {
     printf("%-40s", "select_atoms (atomname, nomatch) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -415,6 +437,7 @@ static void test_select_atoms_atomname_nomatch(void)
 static void test_select_atoms_resname(void)
 {
     printf("%-40s", "select_atoms (resname) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -434,6 +457,7 @@ static void test_select_atoms_resname(void)
 static void test_select_atoms_resname_multiple(void)
 {
     printf("%-40s", "select_atoms (resname, multiple) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -453,6 +477,7 @@ static void test_select_atoms_resname_multiple(void)
 static void test_select_atoms_resname_empty(void)
 {
     printf("%-40s", "select_atoms (resname, empty) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -470,6 +495,7 @@ static void test_select_atoms_resname_empty(void)
 static void test_select_atoms_resname_nomatch(void)
 {
     printf("%-40s", "select_atoms (resname, nomatch) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -487,6 +513,7 @@ static void test_select_atoms_resname_nomatch(void)
 static void test_select_atoms_atomnum(void)
 {
     printf("%-40s", "select_atoms (atomnum) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -506,6 +533,7 @@ static void test_select_atoms_atomnum(void)
 static void test_select_atoms_atomnum_nomatch(void)
 {
     printf("%-40s", "select_atoms (atomnum, nomatch) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -523,6 +551,7 @@ static void test_select_atoms_atomnum_nomatch(void)
 static void test_selection_cat(void)
 {
     printf("%-40s", "selection_cat ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -551,6 +580,7 @@ static void test_selection_cat(void)
 static void test_selection_cat_unique(void)
 {
     printf("%-40s", "selection_cat_unique ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -582,6 +612,7 @@ static void test_selection_cat_unique(void)
 static void test_selection_intersect(void)
 {
     printf("%-40s", "selection_intersect ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -605,6 +636,7 @@ static void test_selection_intersect(void)
 static void test_selection_intersect_none(void)
 {
     printf("%-40s", "selection_intersect (none) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -625,6 +657,7 @@ static void test_selection_intersect_none(void)
 static void test_selection_remove_atom(void)
 {
     printf("%-40s", "selection_remove_atom ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -647,6 +680,7 @@ static void test_selection_remove_atom(void)
 static void test_selection_remove_atom_none(void)
 {
     printf("%-40s", "selection_remove_atom (none) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -668,6 +702,7 @@ static void test_selection_remove_atom_none(void)
 static void test_selection_remove_atom_all(void)
 {
     printf("%-40s", "selection_remove_atom (all) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -689,6 +724,7 @@ static void test_selection_remove_atom_all(void)
 static void test_selection_remove_atom_duplicates(void)
 {
     printf("%-40s", "selection_remove_atom (duplicates) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -713,6 +749,7 @@ static void test_selection_remove_atom_duplicates(void)
 static void test_selection_remove(void)
 {
     printf("%-40s", "selection_remove ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -737,6 +774,7 @@ static void test_selection_remove(void)
 static void test_selection_remove_none(void)
 {
     printf("%-40s", "selection_remove (none) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -761,6 +799,7 @@ static void test_selection_remove_none(void)
 static void test_selection_remove_all(void)
 {
     printf("%-40s", "selection_remove (all) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -783,6 +822,7 @@ static void test_selection_remove_all(void)
 static void test_selection_remove_all2(void)
 {
     printf("%-40s", "selection_remove (all2) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -807,6 +847,7 @@ static void test_selection_remove_all2(void)
 static void test_selection_compare(void)
 {
     printf("%-40s", "selection_compare");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -837,6 +878,7 @@ static void test_selection_compare(void)
 static void test_selection_compare_empty(void)
 {
     printf("%-40s", "selection_compare (empty)");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -859,6 +901,7 @@ static void test_selection_compare_empty(void)
 static void test_selection_compare_strict(void)
 {
     printf("%-40s", "selection_compare_strict");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -898,6 +941,7 @@ static void test_selection_compare_strict(void)
 static void test_selection_compare_strict_empty(void)
 {
     printf("%-40s", "selection_compare_strict (empty)");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -920,6 +964,7 @@ static void test_selection_compare_strict_empty(void)
 static void test_selection_unique(void)
 {
     printf("%-40s", "selection_unique ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -941,6 +986,7 @@ static void test_selection_unique(void)
 static void test_selection_renumber(void)
 {
     printf("%-40s", "selection_renumber ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -968,6 +1014,7 @@ static void test_selection_renumber(void)
 static void test_selection_sort(void)
 {
     printf("%-40s", "selection_sort ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -992,6 +1039,7 @@ static void test_selection_sort(void)
 static void test_selection_sort_renumber(void)
 {
     printf("%-40s", "selection_sort (renumbered) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1025,6 +1073,7 @@ static void test_selection_sort_renumber(void)
 static void test_selection_sort_gmx(void)
 {
     printf("%-40s", "selection_sort_gmx ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1049,6 +1098,7 @@ static void test_selection_sort_gmx(void)
 static void test_selection_sort_gmx_renumber(void)
 {
     printf("%-40s", "selection_sort_gmx (renumbered) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1082,6 +1132,7 @@ static void test_selection_sort_gmx_renumber(void)
 static void test_selection_fixres(void)
 {
     printf("%-40s", "selection_fixres ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1113,6 +1164,7 @@ static void test_selection_fixres(void)
 static void test_selection_isin(void)
 {
     printf("%-40s", "selection_isin ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1145,6 +1197,7 @@ static void test_selection_isin(void)
 static void test_selection_getnres(void)
 {
     printf("%-40s", "selection_getnres ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1163,6 +1216,7 @@ static void test_selection_getnres(void)
 static void test_selection_getresnames(void)
 {
     printf("%-40s", "selection_getresnames ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1190,6 +1244,7 @@ static void test_selection_getresnames(void)
 static void test_selection_splitbyres(void)
 {
     printf("%-40s", "selection_splitbyres ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1228,6 +1283,7 @@ static void test_selection_splitbyres(void)
 static void test_selection_splitbyres_broken(void)
 {
     printf("%-40s", "selection_splitbyres (broken) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1267,6 +1323,7 @@ static void test_selection_splitbyres_broken(void)
 static void test_selection_splitbyres_empty(void)
 {
     printf("%-40s", "selection_splitbyres (empty) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1288,6 +1345,7 @@ static void test_selection_splitbyres_empty(void)
 static void test_selection_to_system(void)
 {
     printf("%-40s", "selection_to_system ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1336,6 +1394,7 @@ static void test_selection_to_system(void)
 static void test_select_geometry_sphere(void)
 {
     printf("%-40s", "select_geometry (sphere) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1357,6 +1416,7 @@ static void test_select_geometry_sphere(void)
 static void test_select_geometry_box(void)
 {
     printf("%-40s", "select_geometry (box) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1378,6 +1438,7 @@ static void test_select_geometry_box(void)
 static void test_select_geometry_zcylinder(void)
 {
     printf("%-40s", "select_geometry (zcylinder) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1399,6 +1460,7 @@ static void test_select_geometry_zcylinder(void)
 static void test_select_geometry_ycylinder(void)
 {
     printf("%-40s", "select_geometry (ycylinder) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1420,6 +1482,7 @@ static void test_select_geometry_ycylinder(void)
 static void test_select_geometry_xcylinder(void)
 {
     printf("%-40s", "select_geometry (xcylinder) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1441,6 +1504,7 @@ static void test_select_geometry_xcylinder(void)
 static void test_read_ndx(void)
 {
     printf("%-40s", "read_ndx (basic) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     dict_t *ndx_groups = read_ndx(NDX_FILE, system);
@@ -1476,6 +1540,7 @@ static void test_read_ndx(void)
 static void test_read_ndx_advanced(void)
 {
     printf("%-40s", "read_ndx (advanced) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1551,6 +1616,7 @@ static void test_read_ndx_advanced(void)
 static void test_read_ndx_empty(void)
 {
     printf("%-40s", "read_ndx (empty) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     dict_t *ndx_groups = read_ndx(EMPTY_NDX_FILE, system);
@@ -1574,6 +1640,7 @@ static void test_read_ndx_empty(void)
 static void test_read_ndx_nonexistent(void)
 {
     printf("%-40s", "read_ndx (non-existent) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     dict_t *ndx_groups = read_ndx("index.ndx", system);
@@ -1587,6 +1654,7 @@ static void test_read_ndx_nonexistent(void)
 static void test_smart_select(void)
 {
     printf("%-40s", "smart_select ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1773,6 +1841,7 @@ static void test_smart_select(void)
 static void test_smart_select_fails(void)
 {
     printf("%-40s", "smart_select (fails) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -1807,6 +1876,7 @@ static void test_smart_select_fails(void)
 static void test_smart_select_advanced(void)
 {
     printf("%-40s", "smart_select (advanced) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2074,6 +2144,7 @@ static void test_smart_select_advanced(void)
 static void test_smart_select_to(void)
 {
     printf("%-40s", "smart_select (to) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2157,6 +2228,7 @@ static void test_smart_select_to(void)
 static void test_smart_select_advanced_fails(void)
 {
     printf("%-40s", "smart_select (advanced, fails) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2188,6 +2260,7 @@ static void test_smart_select_advanced_fails(void)
 static void test_smart_select_parentheses(void)
 {
     printf("%-40s", "smart_select (parentheses) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2312,6 +2385,7 @@ static void test_smart_select_parentheses(void)
 static void test_smart_select_parentheses_fails(void)
 {
     printf("%-40s", "smart_select (parentheses, fails) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2366,6 +2440,7 @@ static void test_smart_select_parentheses_fails(void)
 static void test_smart_geometry(void)
 {
     printf("%-40s", "smart_geometry ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);
@@ -2503,6 +2578,7 @@ static void test_smart_geometry(void)
 static void test_smart_geometry_null(void)
 {
     printf("%-40s", "smart_geometry (fail & null) ");
+    fflush(stdout);
 
     system_t *system = load_gro(INPUT_GRO_FILE);
     select_t *all = select_system(system);

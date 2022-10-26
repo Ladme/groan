@@ -8,11 +8,22 @@
 #include <string.h>
 #include "gro.h"
 
+#define M_PI 3.141592f
+#define M_PI_X2 6.283184f
+
 /*! @brief Python-like modulo function. */
 inline float pymod(float n, float M)
 {
     return fmodf( fmodf(n, M) + M, M);
 }
+
+
+/*! @brief Converts radians to degrees. */
+inline float rad2deg(float rad)
+{
+    return rad * (180.0f / M_PI);
+}
+
 
 /*! @brief Returns oriented line distance between two points in space. Handles rectangular PBC.
  * 
@@ -151,5 +162,15 @@ void selection_rotate(atom_selection_t *selection, const vec_t origin, const flo
  *
  */
 void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis);
+
+/*! @brief Calculates angle between two vectors in degrees.
+ *
+ * @param vecA                  first vector
+ * @param vecB                  second vector
+ * 
+ * @return Angle between the vectors in degrees.
+ * 
+ */
+float calc_angle(const vec_t vecA, const vec_t vecB);
 
 #endif /* ANALYSIS_TOOLS_H */
