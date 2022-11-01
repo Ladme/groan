@@ -135,7 +135,7 @@ void selection_translate(atom_selection_t *selection,  vec_t trans, box_t box);
  * @param point                 position of the point in the xyz coordinate system
  * @param origin                position of the origin
  * @param axis                  axis to rotate the point around (x/y/z)
- * @param theta                 rotation around the axis
+ * @param theta                 rotation around the axis (in degrees)
  *
  */
 void rotate_point(vec_t point, const vec_t origin, const float theta, const dimension_t axis);
@@ -146,7 +146,7 @@ void rotate_point(vec_t point, const vec_t origin, const float theta, const dime
  * @param selection             selection of atoms to be rotated
  * @param origin                position of the origin
  * @param axis                  axis to rotate the point around (x/y/z)
- * @param theta                 rotation around the axis
+ * @param theta                 rotation around the axis (in degrees)
  * @param box                   simulation box size
  *
  */
