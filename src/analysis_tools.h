@@ -163,6 +163,7 @@ void selection_rotate(atom_selection_t *selection, const vec_t origin, const flo
  */
 void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, const float theta, const dimension_t axis);
 
+
 /*! @brief Calculates angle between two vectors in degrees.
  *
  * @param vecA                  first vector
@@ -172,5 +173,23 @@ void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, con
  * 
  */
 float calc_angle(const vec_t vecA, const vec_t vecB);
+
+/*! @brief Sorts atoms in selection by their absolute distance from a reference point. Handles PBC.
+ *
+ * @paragraph Note on dimensionality.
+ * `dim` is an enum with options dimensionality_xyz, dimensionality_xy, dimensionality_xz, dimensionality_yz,
+ * dimensionality_x, dimensionality_y, dimensionality_z. 
+ * 
+ * This option specifies the dimensions in which the distance between the atoms and the reference point should be calculated. 
+ * 
+ * Even in case of 1D distance, an absolute (always positive) distance is used.
+ *
+ * @param selection             selection of atoms to sort
+ * @param reference             reference point
+ * @param dim                   what dimensions should be included in the calculation
+ * @param box                   simulation box size
+ * 
+ */
+void selection_sort_by_dist(atom_selection_t *selection, const vec_t reference, const dimensionality_t dim, box_t box);
 
 #endif /* ANALYSIS_TOOLS_H */

@@ -54,13 +54,13 @@ typedef struct atom_selection {
     atom_t *atoms[];
 } atom_selection_t;
 
-/*! @brief Macro shortcut for atom_selection_t.
+/*! @brief Shortcut for atom_selection_t.
  * 
  * @paragraph Note on usage
  * To avoid confusion, this shortcut should never be used anywhere in the core groan library code.
  * It might however be useful in external or peripheral programs using groan library.
  */
-#define select_t atom_selection_t
+typedef atom_selection_t select_t;
 
 /*
  * Used to specify geometry for a geometric selection of atoms.
@@ -95,6 +95,27 @@ typedef enum dimension {
         y,
         z
 } dimension_t;
+
+
+/*
+ * Used to specify dimensionality.
+ */
+typedef enum dimensionality {
+    dimensionality_x,
+    dimensionality_y,
+    dimensionality_z,
+    dimensionality_xy,
+    dimensionality_xz,
+    dimensionality_yz,
+    dimensionality_xyz
+} dimensionality_t;
+
+
+/*! @brief Structure packing a pointer to atom with an arbitrary float. Used in selection_sort_by_dist. */
+struct atom_with_float {
+    atom_t *atom;
+    float number;
+};
 
 
 /*! @brief Tests whether float is close to some specified value. */

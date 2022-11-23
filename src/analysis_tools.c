@@ -250,3 +250,68 @@ float calc_angle(const vec_t vecA, const vec_t vecB)
 
     return rad2deg(angle);
 }
+
+/* Simple function for comparison of floats in atom_with_float structures. Used in selection_sort_by_dist. */
+static int compare_atomfloats(const void *x, const void *y)
+{
+    const struct atom_with_float atom1 = *((const struct atom_with_float *) x);
+    const struct atom_with_float atom2 = *((const struct atom_with_float *) y);
+
+    return (atom1.number > atom2.number) - (atom1.number < atom2.number);
+}
+
+void selection_sort_by_dist(atom_selection_t *selection, const vec_t reference, const dimensionality_t dim, box_t box)
+{
+    // we construct a new array of atoms with associated float
+    struct atom_with_float *data = calloc(selection->n_atoms, sizeof(struct atom_with_float));
+
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        
+        float distance = 0.0;
+        atom_t *atom = selection->atoms[i];
+
+        switch (dim) {
+        
+        case dimensionality_xyz:
+            distance = distance3D(atom->position, reference, box);
+            break;
+        
+        case dimensionality_xy:
+            distance = distance2D(atom->position, reference, xy, box);
+            break;
+
+        case dimensionality_xz:
+            distance = distance2D(atom->position, reference, xz, box);
+            break;
+        
+        case dimensionality_yz:
+            distance = distance2D(atom->position, reference, yz, box);
+            break;
+        
+        case dimensionality_x:
+            distance = fabsf(distance1D(atom->position, reference, x, box));
+            break;
+        
+        case dimensionality_y:
+            distance = fabsf(distance1D(atom->position, reference, y, box));
+            break;
+        
+        case dimensionality_z:
+            distance = fabsf(distance1D(atom->position, reference, z, box));
+            break;
+        }
+
+        struct atom_with_float atomf = {.atom = atom, .number = distance};
+        data[i] = atomf;
+    }
+
+    // we then sort the constructed data array
+    qsort(data, selection->n_atoms, sizeof(struct atom_with_float), &compare_atomfloats);
+
+    // and assign the atoms into selection in the sorted order
+    for (size_t i = 0; i < selection->n_atoms; ++i) {
+        selection->atoms[i] = data[i].atom;
+    }
+
+    free(data);
+}

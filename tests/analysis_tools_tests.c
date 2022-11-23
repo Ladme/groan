@@ -705,6 +705,104 @@ void test_calc_angle(void)
     printf("OK\n");
 }
 
+void test_selection_sort_by_dist(void)
+{
+    printf("%-40s", "selection_sort_by_dist ");
+    fflush(stdout);
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    select_t *phosphates = smart_select(all, "name P", NULL);
+
+    vec_t center = {0.0};
+    center_of_geometry_naive(phosphates, center);
+
+    // XYZ
+    select_t *phosphates_sorted_xyz = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_xyz, center, dimensionality_xyz, system->box);
+
+    assert(selection_compare(phosphates, phosphates_sorted_xyz));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( distance3D(phosphates_sorted_xyz->atoms[i]->position, center, system->box)
+                <= distance3D(phosphates_sorted_xyz->atoms[i + 1]->position, center, system->box));
+    }
+
+    free(phosphates_sorted_xyz);
+
+    // XY
+    select_t *phosphates_sorted_xy = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_xy, center, dimensionality_xy, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_xy));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( distance2D(phosphates_sorted_xy->atoms[i]->position, center, xy, system->box)
+                <= distance2D(phosphates_sorted_xy->atoms[i + 1]->position, center, xy, system->box));
+    }
+
+    free(phosphates_sorted_xy);
+
+    // XZ
+    select_t *phosphates_sorted_xz = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_xz, center, dimensionality_xz, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_xz));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( distance2D(phosphates_sorted_xz->atoms[i]->position, center, xz, system->box)
+                <= distance2D(phosphates_sorted_xz->atoms[i + 1]->position, center, xz, system->box));
+    }
+
+    free(phosphates_sorted_xz);
+
+    // YZ
+    select_t *phosphates_sorted_yz = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_yz, center, dimensionality_yz, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_yz));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( distance2D(phosphates_sorted_yz->atoms[i]->position, center, yz, system->box)
+                <= distance2D(phosphates_sorted_yz->atoms[i + 1]->position, center, yz, system->box));
+    }
+
+    free(phosphates_sorted_yz);
+
+    // X
+    select_t *phosphates_sorted_x = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_x, center, dimensionality_x, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_x));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( fabsf(distance1D(phosphates_sorted_x->atoms[i]->position, center, x, system->box))
+                <= fabsf(distance1D(phosphates_sorted_x->atoms[i + 1]->position, center, x, system->box)));
+    }
+
+    free(phosphates_sorted_x);
+
+    // Y
+    select_t *phosphates_sorted_y = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_y, center, dimensionality_y, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_y));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( fabsf(distance1D(phosphates_sorted_y->atoms[i]->position, center, y, system->box))
+                <= fabsf(distance1D(phosphates_sorted_y->atoms[i + 1]->position, center, y, system->box)));
+    }
+
+    free(phosphates_sorted_y);
+
+    // Z
+    select_t *phosphates_sorted_z = selection_copy(phosphates);
+    selection_sort_by_dist(phosphates_sorted_z, center, dimensionality_z, system->box);
+    assert(selection_compare(phosphates, phosphates_sorted_z));
+    for (size_t i = 0; i < phosphates->n_atoms - 1; ++i) {
+        assert( fabsf(distance1D(phosphates_sorted_z->atoms[i]->position, center, z, system->box))
+                <= fabsf(distance1D(phosphates_sorted_z->atoms[i + 1]->position, center, z, system->box)));
+    }
+
+    free(phosphates_sorted_z);
+
+    free(phosphates);
+    free(all);
+    free(system);
+    printf("OK\n");
+
+}
+
 
 void test_analysis_tools(void)
 {
@@ -728,4 +826,6 @@ void test_analysis_tools(void)
     test_selection_rotate();
 
     test_calc_angle();
+    
+    test_selection_sort_by_dist();
 }
