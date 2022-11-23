@@ -526,6 +526,40 @@ void selection_sort_gmx(atom_selection_t *selection)
     qsort(selection->atoms, selection->n_atoms, sizeof(atom_t *), &compare_gmxatomnum);
 }
 
+void selection_reverse(atom_selection_t *selection)
+{
+    for (size_t i = 0; i < selection->n_atoms / 2; ++i) {
+        atom_t *temp_atom = selection->atoms[i];
+        selection->atoms[i] = selection->atoms[selection->n_atoms - i - 1];
+        selection->atoms[selection->n_atoms - i - 1] = temp_atom;
+    }
+}
+
+atom_selection_t *selection_slice(const atom_selection_t *selection, int slice_start, int slice_end)
+{
+    // negative indices are treated the same way as in python
+    if (slice_start < 0) slice_start = selection->n_atoms + slice_start;
+
+    if (slice_end < 0) slice_end = selection->n_atoms + slice_end;
+    else if (slice_end == 0 || (size_t) slice_end > selection->n_atoms) slice_end = selection->n_atoms;
+
+    if (slice_start >= slice_end) return NULL;
+
+    // if slice start is still negative
+    if (slice_start < 0) slice_start = 0;
+
+    if (slice_end < 0) return NULL;
+
+    size_t alloc = INITIAL_SELECTION_SIZE;
+    atom_selection_t *slice = selection_create(alloc);
+
+    for (size_t i = (size_t) slice_start; i < (size_t) slice_end; ++i) {
+        selection_add_atom(&slice, &alloc, selection->atoms[i]);
+    }
+
+    return slice;
+}
+
 void selection_fixres(atom_selection_t *selection)
 {
     // this is a complicated function

@@ -1129,6 +1129,134 @@ static void test_selection_sort_gmx_renumber(void)
     printf("OK\n");
 }
 
+static void test_selection_reverse(void)
+{
+    printf("%-40s", "selection_reverse ");
+    fflush(stdout);
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    select_t *all_copy = selection_copy(all);
+
+    selection_reverse(all_copy);
+
+    assert(selection_compare(all, all_copy));
+    assert(!selection_compare_strict(all, all_copy));
+    assert(all_copy->atoms[0]->gmx_atom_number == system->n_atoms);
+    assert(all_copy->atoms[all_copy->n_atoms - 1]->gmx_atom_number == 1);
+
+    selection_reverse(all_copy);
+
+    assert(selection_compare_strict(all, all_copy));
+
+    free(all_copy);
+
+    select_t *all_minus_one = selection_copy(all);
+    selection_remove_atom(all_minus_one, all_minus_one->atoms[0]);
+
+    selection_reverse(all_minus_one);
+    assert(all_minus_one->atoms[0]->gmx_atom_number == system->n_atoms);
+    assert(all_minus_one->atoms[all_minus_one->n_atoms - 1]->gmx_atom_number == 2);
+
+    free(all_minus_one);
+
+    free(system);
+    free(all);
+    printf("OK\n");
+}
+
+static void test_selection_slice(void)
+{
+    printf("%-40s", "selection_slice ");
+    fflush(stdout);
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+
+    // simple slice
+    select_t *slice1 = selection_slice(all, 4, 9);
+    assert(slice1->n_atoms == 5);
+    assert(slice1->atoms[0]->gmx_atom_number == 5);
+    assert(slice1->atoms[4]->gmx_atom_number == 9);
+
+    free(slice1);
+
+    // full slice with zero
+    select_t *slice2 = selection_slice(all, 0, 0);
+    assert(slice2->n_atoms == all->n_atoms);
+    assert(selection_compare_strict(slice2, all));
+
+    free(slice2);
+
+    // full slice with large end index
+    select_t *slice3 = selection_slice(all, 0, 965432);
+    assert(slice3->n_atoms == all->n_atoms);
+    assert(selection_compare_strict(slice3, all));
+
+    free(slice3);
+
+    // slice with negative start
+    select_t *slice4 = selection_slice(all, -9, 0);
+    assert(slice4->n_atoms == 9);
+    assert(slice4->atoms[0]->gmx_atom_number == 48276);
+    assert(slice4->atoms[8]->gmx_atom_number == 48284);
+
+    free(slice4);
+
+    // slice with negative start and positive end
+    select_t *slice5 = selection_slice(all, -9, 48282);
+    assert(slice5->n_atoms == 7);
+    assert(slice5->atoms[0]->gmx_atom_number == 48276);
+    assert(slice5->atoms[6]->gmx_atom_number == 48282);
+
+    free(slice5);
+
+    // slice with negative start and negative end
+    select_t *slice6 = selection_slice(all, -9, -2);
+    assert(slice6->n_atoms == 7);
+    assert(slice6->atoms[0]->gmx_atom_number == 48276);
+    assert(slice6->atoms[6]->gmx_atom_number == 48282);
+
+    free(slice6);
+
+    // slice with positive start and negative end
+    select_t *slice7 = selection_slice(all, 48275, -2);
+    assert(slice7->n_atoms == 7);
+    assert(slice7->atoms[0]->gmx_atom_number == 48276);
+    assert(slice7->atoms[6]->gmx_atom_number == 48282);
+
+    free(slice7);
+
+    // slice is very negative
+    select_t *slice8 = selection_slice(all, -65432, 0);
+    assert(slice8->n_atoms == all->n_atoms);
+    assert(selection_compare_strict(slice8, all));
+
+    free(slice8);
+
+    // failed slice: start is higher than end
+    select_t *failed_slice1 = selection_slice(all, 36, 18);
+    assert(failed_slice1 == NULL);
+
+    // failed slice: negative start is higher than positive end
+    select_t *failed_slice2 = selection_slice(all, -652, 18);
+    assert(failed_slice2 == NULL);
+
+    // failed slice: negative start is higher than negative end
+    select_t *failed_slice3 = selection_slice(all, -18, -652);
+    assert(failed_slice3 == NULL);
+
+    // failed slice: end is way too negative
+    select_t *failed_slice4 = selection_slice(all, 12, -64320);
+    assert(failed_slice4 == NULL);
+
+
+    free(system);
+    free(all);
+    printf("OK\n");
+}
+
 static void test_selection_fixres(void)
 {
     printf("%-40s", "selection_fixres ");
@@ -2765,6 +2893,9 @@ void test_selection(void)
     test_selection_sort_renumber();
     test_selection_sort_gmx();
     test_selection_sort_gmx_renumber();
+
+    test_selection_reverse();
+    test_selection_slice();
 
     test_selection_fixres();
     test_selection_isin();

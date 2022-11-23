@@ -102,6 +102,7 @@ int match_atom_num(const atom_t *atom, const char *string);
 
 /*! @brief Creates an empty atom_selection structure and allocates memory for it.
  * 
+ * @paragraph Details
  * Empty atom_selection means that the n_atoms variable is set to zero.
  * Enough memory to hold 'items' atoms is allocated, though the memory can be later reallocated,
  * e.g. by using selection_add_atom().
@@ -428,9 +429,53 @@ void selection_sort(atom_selection_t *selection);
  * selection containing duplicate atoms.
  * 
  * @param selection             selection of atoms to sort
+ * 
  */ 
 void selection_sort_gmx(atom_selection_t *selection);
 
+
+/*! @brief Reverses the order of atoms in the atom selection.
+ *
+ * @param selection             selection of atoms to reverse
+ * 
+ */ 
+void selection_reverse(atom_selection_t *selection);
+
+/*! @brief Takes a slice of atoms from selection.
+ *
+ * @paragraph Indices
+ * Slice start is the index of the first atom in the selection to be
+ * included in the slice.
+ * Slice end is the index right after the last atom in the selection
+ * that is included in the slice.
+ * For instance, if the selection contains atoms [A, B, C, D, E, F, G, H],
+ * and slice start is 2 and slice end is 5, the output slice will be
+ * [C, D, E].
+ * 
+ * selection_slice() does not care about atom numbers or residues,
+ * it only cares about the positions of atoms in the selection itself.
+ * 
+ * In other words, this replicates the pythonic `list[a:b]`.
+ * 
+ * @paragraph Zero indices
+ * If slice_start is zero, the slicing will start at the start of the selection.
+ * If slice_end is zero, the slicing will end at the END of the selection 
+ * (the last item will be included in the slice).
+ * 
+ * @paragraph Negative indices
+ * Using negative index for slice_start or slice_end leads to the same
+ * behavior as in python (-1 is the last index, -2 is the second to last index).
+ * 
+ * @paragraph Input selection
+ * Input selection will not be modified.
+ * 
+ * @param selection            selection to slice
+ * @param slice_start          index of the first item
+ * @param slice_end            index of the next item after the last item 
+ * 
+ * @return Atom selection containing slice of the input selection. NULL in case of an error.
+ */
+atom_selection_t *selection_slice(const atom_selection_t *selection, int slice_start, int slice_end);
 
 /*! @brief Fixes split residues in a selection.
  *
