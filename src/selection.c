@@ -883,7 +883,7 @@ static atom_selection_t *selection_invert(const atom_selection_t *all, const ato
 }
 
 /*! @brief Parses lexeme translating it to atom selection structure pointer to which is returned. */
-static atom_selection_t *parse_lexeme(atom_selection_t *selection, char *lexeme, dict_t *ndx_groups)
+static atom_selection_t *parse_lexeme(const atom_selection_t *selection, char *lexeme, const dict_t *ndx_groups)
 {
     // check whether the lexeme contains 'not' or '!'
     int not = 0;
@@ -1027,7 +1027,7 @@ static int expand_to(char **new_string, const char *original_string)
     return 0;
 }
 
-static atom_selection_t *parse_query(atom_selection_t *selection, char *query, dict_t *ndx_groups)
+static atom_selection_t *parse_query(const atom_selection_t *selection, char *query, const dict_t *ndx_groups)
 {
     size_t query_len = strlen(query);
     // split the expanded query into individual lexemes
@@ -1232,7 +1232,7 @@ static atom_selection_t *parse_query(atom_selection_t *selection, char *query, d
     return final;
 }
 
-atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups)
+atom_selection_t *smart_select(const atom_selection_t *selection, const char *query, const dict_t *ndx_groups)
 {
     // check that the query is valid
     if (query == NULL) {
@@ -1270,11 +1270,11 @@ atom_selection_t *smart_select(atom_selection_t *selection, const char *query, d
 }
 
 atom_selection_t *smart_geometry(
-        atom_selection_t *input_selection,
+        const atom_selection_t *input_selection,
         const char *selection_query, 
         const char *reference_query,
         const char *geometry_query,
-        dict_t *ndx_groups,
+        const dict_t *ndx_groups,
         box_t system_box)
 {
     if (input_selection == NULL) return NULL;

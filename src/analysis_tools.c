@@ -179,6 +179,25 @@ int center_of_geometry_naive(const atom_selection_t *selection, vec_t center)
     return 0;
 }
 
+int smart_center_of_geometry(
+        const atom_selection_t *input_selection, 
+        const char *query,
+        const dict_t *ndx_groups, 
+        vec_t center, 
+        box_t box)
+{
+    atom_selection_t *selection = smart_select(input_selection, query, ndx_groups);
+    if (selection == NULL || selection->n_atoms == 0) {
+        free(selection);
+        return 1;
+    }
+
+    int return_code = center_of_geometry(selection, center, box);
+
+    free(selection);
+    return return_code;
+}
+
 void selection_translate(atom_selection_t *selection, vec_t trans, box_t box)
 {
     for (size_t i = 0; i < selection->n_atoms; ++i) {

@@ -7,6 +7,7 @@
 #include <math.h>
 #include <string.h>
 #include "gro.h"
+#include "selection.h"
 
 #define M_PI 3.141592f
 #define M_PI_X2 6.283184f
@@ -117,6 +118,28 @@ int center_of_geometry(const atom_selection_t *selection, vec_t center, box_t bo
  * @return Zero, if successful; else non-zero.
  */
 int center_of_geometry_naive(const atom_selection_t *selection, vec_t center);
+
+
+/*! @brief Calculates center of geometry for atoms selected using string query. Handles rectangular PBC.
+ * 
+ * @paragraph Details
+ * This function creates an atom selection using the provided string query, then calculates
+ * center of geometry of this selection and then deallocates the atom selection.
+ * 
+ * @param input_selection       atoms from which the analyzed atoms should be selected
+ * @param query                 string specifying the selection of atoms
+ * @param ndx_groups            dictionary containing ndx groups and their atoms
+ * @param center                pointer to an array for saving center of geometry
+ * @param box                   current size of the simulation box
+ * 
+ * @return Zero, if successful; else non-zero.
+ */
+int smart_center_of_geometry(
+        const atom_selection_t *input_selection, 
+        const char *query,
+        const dict_t *ndx_groups, 
+        vec_t center, 
+        box_t box);
 
 
 /*! @brief Translates all atoms of selection by trans. Handles rectangular PBC.

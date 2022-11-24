@@ -675,7 +675,7 @@ atom_selection_t *select_geometry_d(
  * @return Pointer to the atom selection. NULL in case the parsing fails. If query is NULL, returns copy of the input selection.
  * 
  */
-atom_selection_t *smart_select(atom_selection_t *selection, const char *query, dict_t *ndx_groups);
+atom_selection_t *smart_select(const atom_selection_t *selection, const char *query, const dict_t *ndx_groups);
 
 
 /*! @brief Select atoms based on the provided geometry query.
@@ -721,11 +721,11 @@ atom_selection_t *smart_select(atom_selection_t *selection, const char *query, d
  * 
  */
 atom_selection_t *smart_geometry(
-        atom_selection_t *input_selection,
+        const atom_selection_t *input_selection,
         const char *selection_query, 
         const char *reference_query,
         const char *geometry_query,
-        dict_t *ndx_groups,
+        const dict_t *ndx_groups,
         box_t system_box);
 
 

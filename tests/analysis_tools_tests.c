@@ -10,7 +10,7 @@ static inline void wrap_coordinate(float *x, const float dimension)
     while (*x < 0) *x += dimension;
 }
 
-void test_distance1D(void)
+static void test_distance1D(void)
 {
     printf("%-40s", "distance1D ");
     fflush(stdout);
@@ -42,7 +42,7 @@ void test_distance1D(void)
     printf("OK\n");
 }
 
-void test_distance2D(void)
+static void test_distance2D(void)
 {
     printf("%-40s", "distance2D ");
     fflush(stdout);
@@ -87,7 +87,7 @@ void test_distance2D(void)
     printf("OK\n");
 }
 
-void test_distance2D_naive(void)
+static void test_distance2D_naive(void)
 {
     printf("%-40s", "distance2D_naive ");
     fflush(stdout);
@@ -132,7 +132,7 @@ void test_distance2D_naive(void)
     printf("OK\n");
 }
 
-void test_distance3D(void)
+static void test_distance3D(void)
 {
     printf("%-40s", "distance3D ");
     fflush(stdout);
@@ -164,7 +164,7 @@ void test_distance3D(void)
     printf("OK\n");
 }
 
-void test_distance3D_naive(void)
+static void test_distance3D_naive(void)
 {
     printf("%-40s", "distance3D_naive ");
     fflush(stdout);
@@ -196,7 +196,7 @@ void test_distance3D_naive(void)
     printf("OK\n");
 }
 
-void test_vector_artificial(void)
+static void test_vector_artificial(void)
 {
     printf("%-40s", "calc_vector (artificial) ");
     fflush(stdout);
@@ -271,7 +271,7 @@ void test_vector_artificial(void)
     printf("OK\n");
 }
 
-void test_vector_system(void)
+static void test_vector_system(void)
 {
     printf("%-40s", "calc_vector (system) ");
     fflush(stdout);
@@ -324,7 +324,7 @@ void test_vector_system(void)
     printf("OK\n");
 }
 
-void test_selection_translate(void)
+static void test_selection_translate(void)
 {
     printf("%-40s", "selection_translate ");
     fflush(stdout);
@@ -419,7 +419,7 @@ void test_selection_translate(void)
     
 }
 
-void test_center_of_geometry(void)
+static void test_center_of_geometry(void)
 {
     printf("%-40s", "center_of_geometry ");
     fflush(stdout);
@@ -462,7 +462,7 @@ void test_center_of_geometry(void)
     printf("OK\n");
 }
 
-void test_center_of_geometry_translated(void)
+static void test_center_of_geometry_translated(void)
 {
     printf("%-40s", "center_of_geometry (translated) ");
     fflush(stdout);
@@ -517,7 +517,7 @@ void test_center_of_geometry_translated(void)
     printf("OK\n");
 }
 
-void test_center_of_geometry_naive(void)
+static void test_center_of_geometry_naive(void)
 {
     printf("%-40s", "center_of_geometry_naive ");
     fflush(stdout);
@@ -560,7 +560,54 @@ void test_center_of_geometry_naive(void)
     printf("OK\n");
 }
 
-void test_rotate_point(void)
+static void test_smart_center_of_geometry(void)
+{
+    printf("%-40s", "smart_center_of_geometry ");
+    fflush(stdout);
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+    select_t *all = select_system(system);
+    dict_t *ndx_groups = read_ndx(NDX_FILE, system);
+
+    // success
+    vec_t protein_center = {0.f};
+    vec_t membrane_center = {0.f};
+    vec_t water_center = {0.f};
+
+    assert(smart_center_of_geometry(all, "resname LEU SER", NULL, protein_center, system->box) == 0);
+    assert(smart_center_of_geometry(all, "Membrane", ndx_groups, membrane_center, system->box ) == 0);
+    assert(smart_center_of_geometry(all, "Water", ndx_groups, water_center, system->box) == 0);
+
+    assert(closef(protein_center[0], 3.443204, 0.000001));
+    assert(closef(protein_center[1], 3.718657, 0.000001));
+    assert(closef(protein_center[2], 6.074358, 0.000001));
+
+    assert(closef(membrane_center[0], 6.906639, 0.000001));
+    assert(closef(membrane_center[1], 1.015586, 0.000001));
+    assert(closef(membrane_center[2], 4.253287, 0.000001));
+
+    assert(closef(water_center[0], 3.241589, 0.000001));
+    assert(closef(water_center[1], 6.776079, 0.000001));
+    assert(closef(water_center[2], 8.794089, 0.000001));
+
+    // fail
+    vec_t fail1 = {0.f};
+    vec_t fail2 = {0.f};
+
+    assert(smart_center_of_geometry(all, "resname GLU", NULL, fail1, system->box) != 0);
+    assert(smart_center_of_geometry(all, "W", NULL, fail2, system->box) != 0);
+
+    assert(fail1[0] == 0.0 && fail1[1] == 0.0 && fail1[2] == 0.0);
+    assert(fail2[0] == 0.0 && fail2[1] == 0.0 && fail2[2] == 0.0);
+
+    dict_destroy(ndx_groups);
+    free(all);
+    free(system);
+    printf("OK\n");
+
+}
+
+static void test_rotate_point(void)
 {
     printf("%-40s", "rotate_point ");
     fflush(stdout);
@@ -594,7 +641,7 @@ void test_rotate_point(void)
     printf("OK\n");
 }
 
-void test_selection_rotate_naive(void)
+static void test_selection_rotate_naive(void)
 {
     printf("%-40s", "selection_rotate_naive ");
     fflush(stdout);
@@ -633,7 +680,7 @@ void test_selection_rotate_naive(void)
     printf("OK\n");
 }
 
-void test_selection_rotate(void)
+static void test_selection_rotate(void)
 {
     printf("%-40s", "selection_rotate ");
     fflush(stdout);
@@ -681,7 +728,7 @@ void test_selection_rotate(void)
     printf("OK\n");
 }
 
-void test_calc_angle(void)
+static void test_calc_angle(void)
 {
     printf("%-40s", "calc_angle ");
     fflush(stdout);
@@ -705,7 +752,7 @@ void test_calc_angle(void)
     printf("OK\n");
 }
 
-void test_selection_sort_by_dist(void)
+static void test_selection_sort_by_dist(void)
 {
     printf("%-40s", "selection_sort_by_dist ");
     fflush(stdout);
@@ -820,6 +867,7 @@ void test_analysis_tools(void)
     test_center_of_geometry();
     test_center_of_geometry_translated();
     test_center_of_geometry_naive();
+    test_smart_center_of_geometry();
 
     test_rotate_point();
     test_selection_rotate_naive();

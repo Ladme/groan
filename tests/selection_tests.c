@@ -242,7 +242,7 @@ static void test_selection_create(void)
 
     system_t *system = load_gro(INPUT_GRO_FILE);
 
-    // we assign a random atom pointer to the last allocated position in the selection
+    // we assign an arbitrary atom pointer to the last allocated position in the selection
     // to test the allocation
     selection->atoms[9] = &system->atoms[10432];
     assert(selection->atoms[9]->atom_number == 10433);
