@@ -121,8 +121,7 @@ struct atom_with_float {
 /*! @brief Tests whether float is close to some specified value. */
 inline int closef(const float a, const float b, const float limit)
 {
-    if (a > b - limit && a < b + limit) return 1;
-    return 0;
+    return (a > b - limit && a < b + limit);
 }
 
 #endif /* GRO_H */
