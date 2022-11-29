@@ -13,9 +13,12 @@ int main(int argc, char **argv)
                 test_analysis_tools();
             } else if (!strcmp(argv[i], "xtc") || !strcmp(argv[i], "trr") || !strcmp(argv[i], "xdr")) {
                 test_xdr();
+            } else if (!strcmp(argv[i], "gro")) {
+                test_gro_io();
             }
         }   
     } else {
+        test_gro_io();
         test_selection();
         test_analysis_tools();
         test_xdr();

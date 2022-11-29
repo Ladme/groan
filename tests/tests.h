@@ -23,5 +23,8 @@ void test_analysis_tools(void);
 /*! @brief Collection of unit tests for xtc_io.h and trr_io.h. */ 
 void test_xdr(void);
 
+/* @brief Collection of unit tests for gro_io.h */
+void test_gro_io(void) ;
+
 
 #endif /* TESTS_H */
