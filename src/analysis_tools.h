@@ -197,6 +197,37 @@ void selection_rotate_naive(atom_selection_t *selection, const vec_t origin, con
  */
 float calc_angle(const vec_t vecA, const vec_t vecB);
 
+
+/*! @brief Returns distance between two points depending on the dimensionality of the problem.
+ *
+ * @param point1                coordinates of the first point
+ * @param point2                coordinates of the second point
+ * @param dim                   dimensionality of the problem
+ * @param box                   simulation box size
+ * @param oriented              should oriented distance be returned for 1D problems?
+ * 
+ * @paragraph Oriented distance
+ * If oriented is set to 1 and dimensionality is x, y or z, 
+ * _oriented_ distance is returned for the two points, i.e. point1.coordinate - point2.coordinate.
+ * If oriented is set to 0 and dimensionality is x, y or z,
+ * normal distance is returned for the two points, i.e. abs(point1.coordinate - point2.coordinate).
+ * 
+ * For higher dimensionality than 1, the value of oriented plays no role.
+ * 
+ * @paragraph Unknown dimensionality
+ * In case unknown dimensionality is encountered, the behavior of this function is undefined.
+ * 
+ * @return Distance between the points.
+ * 
+ */
+float calc_distance_dim(
+        const vec_t point1, 
+        const vec_t point2, 
+        const dimensionality_t dim, 
+        const box_t box, 
+        const int oriented);
+
+
 /*! @brief Sorts atoms in selection by their absolute distance from a reference point. Handles PBC.
  *
  * @paragraph Note on dimensionality.

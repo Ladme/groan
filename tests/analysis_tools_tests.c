@@ -196,6 +196,108 @@ static void test_distance3D_naive(void)
     printf("OK\n");
 }
 
+static void test_calc_distance_dim(void)
+{
+    printf("%-40s", "calc_distance_dim ");
+    fflush(stdout);
+
+    system_t *system = load_gro(INPUT_GRO_FILE);
+
+    // ***********************************************
+
+    atom_t *a1 = &system->atoms[16094];
+    atom_t *a2 = &system->atoms[16095];
+
+    // x, y, z
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 1),  0.103, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 1),  0.098 , 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 1), -0.042 , 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 0),  0.103, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 0),  0.098 , 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 0),  0.042 , 0.000001));
+
+    // xy, xz, yz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 0),  0.142172, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 0),  0.106621, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 0),  0.111234, 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 1),  0.142172, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 1),  0.106621, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 1),  0.111234, 0.000001));
+
+    // xyz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 0), 0.148246, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 1), 0.148246, 0.000001));
+
+    // ***********************************************
+
+    a1 = &system->atoms[7712];
+    a2 = &system->atoms[7211];
+
+    // x, y, z
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 1), -1.56125, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 1),  1.23925 , 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 1),  0.527 , 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 0),  1.56125, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 0),  1.23925 , 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 0),  0.527 , 0.000001));
+
+    // xy, xz, yz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 0),  1.993299, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 0),  1.346651, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 0),  1.647795, 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 1),  1.993299, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 1),  1.346651, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 1),  1.647795, 0.000001));
+
+    // xyz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 0), 2.061788, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 1), 2.061788, 0.000001));
+
+    // ***********************************************
+
+    a1 = &system->atoms[24569];
+    a2 = &system->atoms[42344];
+
+    // x, y, z
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 1), -3.093, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 1),  2.85325, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 1),  3.95112, 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_x, system->box, 0),  3.093, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_y, system->box, 0),  2.85325, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_z, system->box, 0),  3.95112, 0.000001));
+
+    // xy, xz, yz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 0),  4.208050, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 0),  4.873641, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 0),  5.017768, 0.000001));
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xy, system->box, 1),  4.208050, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_yz, system->box, 1),  4.873641, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xz, system->box, 1),  5.017768, 0.000001));
+
+    // xyz
+
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 0), 5.772264, 0.000001));
+    assert(closef(calc_distance_dim(a1->position, a2->position, dimensionality_xyz, system->box, 1), 5.772264, 0.000001));
+
+    free(system);
+    printf("OK\n");
+
+}
+
 static void test_vector_artificial(void)
 {
     printf("%-40s", "calc_vector (artificial) ");
@@ -858,6 +960,7 @@ void test_analysis_tools(void)
     test_distance2D_naive();
     test_distance3D();
     test_distance3D_naive();
+    test_calc_distance_dim();
 
     test_vector_artificial();
     test_vector_system();

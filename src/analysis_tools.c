@@ -270,6 +270,31 @@ float calc_angle(const vec_t vecA, const vec_t vecB)
     return rad2deg(angle);
 }
 
+float calc_distance_dim(
+        const vec_t point1, 
+        const vec_t point2, 
+        const dimensionality_t dim, 
+        const box_t box, 
+        const int oriented)
+{
+    switch (dim) {
+    case dimensionality_xyz: return distance3D(point1, point2, box);
+    case dimensionality_xy:  return distance2D(point1, point2, xy, box);
+    case dimensionality_xz:  return distance2D(point1, point2, xz, box);
+    case dimensionality_yz:  return distance2D(point1, point2, yz, box);
+    case dimensionality_x:   
+        if (oriented) return distance1D(point1, point2, x, box);
+        else return fabsf(distance1D(point1, point2, x, box));
+    case dimensionality_y:
+        if (oriented) return distance1D(point1, point2, y, box);
+        else return fabsf(distance1D(point1, point2, y, box));
+    case dimensionality_z:
+        if (oriented) return distance1D(point1, point2, z, box);
+        else return fabsf(distance1D(point1, point2, z, box));
+    default: return distance3D(point1, point2, box);
+    }
+}
+
 /* Simple function for comparison of floats in atom_with_float structures. Used in selection_sort_by_dist. */
 static int compare_atomfloats(const void *x, const void *y)
 {
@@ -285,40 +310,9 @@ void selection_sort_by_dist(atom_selection_t *selection, const vec_t reference, 
     struct atom_with_float *data = calloc(selection->n_atoms, sizeof(struct atom_with_float));
 
     for (size_t i = 0; i < selection->n_atoms; ++i) {
-        
-        float distance = 0.0;
+    
         atom_t *atom = selection->atoms[i];
-
-        switch (dim) {
-        
-        case dimensionality_xyz:
-            distance = distance3D(atom->position, reference, box);
-            break;
-        
-        case dimensionality_xy:
-            distance = distance2D(atom->position, reference, xy, box);
-            break;
-
-        case dimensionality_xz:
-            distance = distance2D(atom->position, reference, xz, box);
-            break;
-        
-        case dimensionality_yz:
-            distance = distance2D(atom->position, reference, yz, box);
-            break;
-        
-        case dimensionality_x:
-            distance = fabsf(distance1D(atom->position, reference, x, box));
-            break;
-        
-        case dimensionality_y:
-            distance = fabsf(distance1D(atom->position, reference, y, box));
-            break;
-        
-        case dimensionality_z:
-            distance = fabsf(distance1D(atom->position, reference, z, box));
-            break;
-        }
+        float distance = calc_distance_dim(atom->position, reference, dim, box, 0);
 
         struct atom_with_float atomf = {.atom = atom, .number = distance};
         data[i] = atomf;
