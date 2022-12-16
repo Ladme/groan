@@ -24,12 +24,9 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 
 ## Groan-associated programs
 
-- [avpos](https://github.com/Ladme/avpos): calculate average position of individual atoms
 - [center](https://github.com/Ladme/center): center simulation trajectory using Bai & Breen algorithm
-- [com](https://github.com/Ladme/com): calculate center of geometry of a selection of atoms
 - [contact](https://github.com/Ladme/contact): calculate contact matrix for selected atoms
 - [cylinder](https://github.com/Ladme/cylinder): calculate density of atoms inside a cylinder
-- [distance](https://github.com/Ladme/distance): calculate distances between atoms or groups of atoms
 - [gndx](https://github.com/Ladme/gndx): create an ndx group from a selection using groan selection language
 - [gselect](https://github.com/Ladme/gselect): select a group of atoms using groan selection language
 - [memdian](https://github.com/Ladme/memdian): collection of several programs for analyzing membrane disruption
@@ -37,7 +34,7 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 	- wdcalc: calculate average water defect in a cylinder
 	- wdmap: calculate average water defect across the membrane
 - [order & ordermap](https://github.com/Ladme/order): calculate lipid order parameters from coarse-grained trajectories
-- [position](https://github.com/Ladme/position): calculate center of geometry of a selection of atoms _in time_
+- [posdist](https://github.com/Ladme/posdist): calculate positions of atoms and their centers as well as distances between atoms or groups of atoms
 - [scramblyzer](https://github.com/Ladme/scramblyzer): toolbox for analyzing lipid scrambling
 
 Note that while groan library should work on pretty much any modern machine, all of the groan-associated programs require at least a basic level of POSIX-compliance and thus will most likely not work on Windows.
