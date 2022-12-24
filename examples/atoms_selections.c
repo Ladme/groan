@@ -1,3 +1,5 @@
+// Released under MIT License.
+// Copyright (c) 2022-2023 Ladislav Bartos
 
 /* This file shows how to work with atoms and atom selections in groan library. 
  * Compile this code as 'gcc atoms_selections.c -L.. -I.. -lgroan -lm -o atoms_selections'.
