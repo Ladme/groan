@@ -481,8 +481,8 @@ void selection_renumber(atom_selection_t *selection)
 
         // changing atom number is quite simple
         // note that gro files don't support numbers larger than 99,999 and we must follow this
-        // thus, we wrap the atom number to 1, if it reaches 100,000
-        atom->atom_number = (i % 99999) + 1;
+        // thus, we wrap the atom number to 0, if it reaches 100,000
+        atom->atom_number = (i + 1) % 100000;
 
         // to change residue number, we must loop through the residue numbers array...
         // ...checking whether the residue number was already used or not
