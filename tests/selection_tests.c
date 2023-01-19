@@ -954,6 +954,77 @@ static void test_selection_renumber(void)
     printf("OK\n");
 }
 
+static void test_selection_renumber_large(void)
+{
+    printf("%-40s", "selection_renumber (large) ");
+    fflush(stdout);
+
+    // construct a fictional system that is 210,000 atoms large
+    const size_t n_atoms = 210000;
+
+    system_t *system = malloc(sizeof(system_t) + n_atoms * sizeof(atom_t));
+    assert(system != NULL);
+    memset(system, 0, sizeof(system_t) + n_atoms * sizeof(atom_t));
+    system->n_atoms = n_atoms;
+    system->precision = 1000.;
+    
+    for (size_t i = 0; i < n_atoms; ++i) {
+        atom_t *atom = &(system->atoms[i]);
+        atom->residue_number = 1;
+        strncpy(atom->residue_name, "RES", 4);
+        strncpy(atom->atom_name, "ATO", 4);
+        atom->atom_number = n_atoms - i - 1;
+        atom->gmx_atom_number = i + 1;
+    }
+
+    select_t *all = select_system(system);
+
+    selection_renumber(all);
+
+    assert(all->atoms[0]->atom_number == 1);
+    assert(system->atoms[0].atom_number == 1);
+    
+    assert(all->atoms[99998]->atom_number == 99999);
+    assert(system->atoms[99998].atom_number == 99999);
+    assert(all->atoms[99998]->gmx_atom_number == 99999);
+    assert(system->atoms[99998].gmx_atom_number == 99999);
+
+    assert(all->atoms[99999]->atom_number == 0);
+    assert(system->atoms[99999].atom_number == 0);
+    assert(all->atoms[99999]->gmx_atom_number == 100000);
+    assert(system->atoms[99999].gmx_atom_number == 100000);
+
+    assert(all->atoms[100000]->atom_number == 1);
+    assert(system->atoms[100000].atom_number == 1);
+    assert(all->atoms[100000]->gmx_atom_number == 100001);
+    assert(system->atoms[100000].gmx_atom_number == 100001);
+
+    assert(all->atoms[199998]->atom_number == 99999);
+    assert(system->atoms[199998].atom_number == 99999);
+    assert(all->atoms[199998]->gmx_atom_number == 199999);
+    assert(system->atoms[199998].gmx_atom_number == 199999);
+
+    assert(all->atoms[199999]->atom_number == 0);
+    assert(system->atoms[199999].atom_number == 0);
+    assert(all->atoms[199999]->gmx_atom_number == 200000);
+    assert(system->atoms[199999].gmx_atom_number == 200000);
+
+    assert(all->atoms[200000]->atom_number == 1);
+    assert(system->atoms[200000].atom_number == 1);
+    assert(all->atoms[200000]->gmx_atom_number == 200001);
+    assert(system->atoms[200000].gmx_atom_number == 200001);
+
+    assert(all->atoms[209999]->atom_number == 10000);
+    assert(system->atoms[209999].atom_number == 10000);
+    assert(all->atoms[209999]->gmx_atom_number == 210000);
+    assert(system->atoms[209999].gmx_atom_number == 210000);
+    
+    free(system);
+    free(all);
+    printf("OK\n");
+
+}
+
 static void test_selection_sort(void)
 {
     printf("%-40s", "selection_sort ");
@@ -2829,6 +2900,7 @@ void test_selection(void)
     
     test_selection_unique();
     test_selection_renumber();
+    test_selection_renumber_large();
 
     test_selection_sort();
     test_selection_sort_renumber();
