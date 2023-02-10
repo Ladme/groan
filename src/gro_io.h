@@ -99,7 +99,8 @@ int parse_gro_line(const char *line, atom_t *atom);
  * 
  * @paragraph Note on atom numbering
  * Gro files only support atom numbers of <100,000.
- * If there are more atoms, the atom number wraps, starting from 1 again.
+ * If there are more atoms, the atom number wraps, starting from 0 
+ * (which is unfortunately inconsistent because the index of the first atom is 1).
  * Atom_number in the atom_t structure represents the real atom_number from the gro file.
  * In other words, we do not remove the wrapping because there is no way to achieve consistency
  * in case of broken gro files (with some atom numbers missing, for example).
@@ -110,10 +111,10 @@ int parse_gro_line(const char *line, atom_t *atom);
  * to the atom_t structure which can be >99,999.
  * 
  * @paragraph Note on incosistencies in the gro file format
- * Note that some older version of Gromacs tools do not always properly
- * follow the gro file format. For instance, in gromacs v5, if gmx trjconv
+ * Note that some older versions of Gromacs tools do not always properly
+ * follow the gro file format. For instance, in Gromacs 5*, if gmx trjconv
  * is used to split trajectory saved in an xtc file with precision < 1000,
- * the coordinates in the gro file are only printed with 2 decimals, instead of 3.
+ * the coordinates are only printed to the gro file with 2 decimals, instead of 3.
  * In such cases, groan library will fail as it can't be equipped to handle cases
  * in which Gromacs developers do not follow their own standard.
  *
