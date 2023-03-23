@@ -29,6 +29,7 @@ Include `groan.h` in your code and link with `-lgroan -lm`.
 - [cylinder](https://github.com/Ladme/cylinder): calculate density of atoms inside a cylinder
 - [gndx](https://github.com/Ladme/gndx): create an ndx group from a selection using groan selection language
 - [gselect](https://github.com/Ladme/gselect): select a group of atoms using groan selection language
+- [leaflets2ndx](https://github.com/Ladme/leaflets2ndx): create ndx groups for lipids based on their type and membrane leaflet they occupy
 - [memdian](https://github.com/Ladme/memdian): collection of several programs for analyzing membrane disruption
 	- memthick: calculate average membrane thickness across the membrane
 	- wdcalc: calculate average water defect in a cylinder
