@@ -555,7 +555,7 @@ list_t *selection_getresnames(const atom_selection_t *selection);
  * 
  * @return Number of unique residues in the selection.
  */ 
-size_t selection_splitbyres(atom_selection_t *selection, atom_selection_t ***split);
+size_t selection_splitbyres(const atom_selection_t *selection, atom_selection_t ***split);
 
 
 /*! @brief Creates a new system_t structure from provided atom selection.

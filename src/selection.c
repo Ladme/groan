@@ -681,7 +681,7 @@ list_t *selection_getresnames(const atom_selection_t *selection)
     return resnames;
 }
 
-size_t selection_splitbyres(atom_selection_t *selection, atom_selection_t ***split)
+size_t selection_splitbyres(const atom_selection_t *selection, atom_selection_t ***split)
 {
     // if selection does not exist or is empty, do not allocate any memory for split and return 0
     if (selection == NULL || selection->n_atoms <= 0) return 0;
