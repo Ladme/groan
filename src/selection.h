@@ -522,7 +522,7 @@ int selection_isin(atom_selection_t *selection, atom_t *atom);
  * 
  * @return The number of unique residues in selection.
  */ 
-size_t selection_getnres(atom_selection_t *selection);
+size_t selection_getnres(const atom_selection_t *selection);
 
 
 /*! @brief Collects unique residue names from a selection.
@@ -531,7 +531,7 @@ size_t selection_getnres(atom_selection_t *selection);
  * 
  * @return Pointer to a list_t structure.
  */ 
-list_t *selection_getresnames(atom_selection_t *selection);
+list_t *selection_getresnames(const atom_selection_t *selection);
 
 
 /*! @brief Splits selection into an array of atom selections of the same residue.

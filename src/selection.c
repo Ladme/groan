@@ -634,7 +634,7 @@ int selection_isin(atom_selection_t *selection, atom_t *atom)
     return 0;
 }
 
-size_t selection_getnres(atom_selection_t *selection)
+size_t selection_getnres(const atom_selection_t *selection)
 {
     size_t total_residues = 0;
     // we allocate enough memory to hold N numbers where N is the number of atoms in selection
@@ -665,7 +665,7 @@ size_t selection_getnres(atom_selection_t *selection)
 }
 
 
-list_t *selection_getresnames(atom_selection_t *selection)
+list_t *selection_getresnames(const atom_selection_t *selection)
 {
     list_t *resnames = list_create();
     if (resnames == NULL) return NULL;
