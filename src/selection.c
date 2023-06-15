@@ -779,6 +779,49 @@ system_t *selection_to_system(
     return new_system;
 }
 
+
+system_t *selection_to_system_nofixres(
+        const atom_selection_t *selection, 
+        const box_t box, 
+        const int step, 
+        const float time)
+{
+    // create new atom selection
+    atom_selection_t *new_selection = selection_copy(selection);
+
+    // remove duplicate atoms
+    selection_unique(new_selection);
+
+    // create new system_t structure
+    system_t *new_system = malloc(sizeof(system_t) + new_selection->n_atoms * sizeof(atom_t));
+    memset(new_system, 0, sizeof(system_t) + new_selection->n_atoms * sizeof(atom_t));
+    new_system->n_atoms = new_selection->n_atoms;
+    memcpy(new_system->box, box, sizeof(box_t));
+    new_system->step = step;
+    new_system->time = time;
+
+    // copy atoms from the new_selection to new_system
+    for (size_t i = 0; i < new_selection->n_atoms; ++i) {
+        memcpy(&new_system->atoms[i], new_selection->atoms[i], sizeof(atom_t));
+        // change gmx_atom_number
+        new_system->atoms[i].gmx_atom_number = i + 1;
+    }
+
+    // reassign new_selection to be associated with the new system
+    free(new_selection);
+    new_selection = select_system(new_system);
+
+    // renumber atoms in the new_system (this is little convoluted)
+    selection_renumber(new_selection);
+
+    // deallocate new_selection
+    free(new_selection);
+
+    // return pointer to the new system
+    return new_system;
+}
+
+
 system_t *selection_to_system_d(
         atom_selection_t *selection, 
         const box_t box, 

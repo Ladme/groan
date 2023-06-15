@@ -609,6 +609,20 @@ system_t *selection_to_system_d(
         const int step, 
         const float time);
 
+/*! @brief Creates a new system_t structure from provided atom selection without fixing residues.
+ * 
+ * @param selection             selection of atoms
+ * @param box                   boxsize of the new system
+ * @param step                  current simulation step
+ * @param time                  current simulation time
+ * 
+ * @return Pointer to the new system_t structure.
+ */
+system_t *selection_to_system_nofixres(
+        const atom_selection_t *selection, 
+        const box_t box, 
+        const int step, 
+        const float time);
 
 /*! @brief Selects atoms based on specified geometric property. Handles rectangular PBC.
  *
