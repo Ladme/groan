@@ -2,6 +2,10 @@
 
 Pure C library for analysis of Gromacs simulations.
 
+## WARNING
+
+**This library is deprecated and will not be further developed. If you are looking for an actively developed low level library for analyzing Gromacs simulations, see my [groan_rs](https://github.com/Ladme/groan_rs) library written in Rust.**
+
 ## Installing
 
 ### Linux
